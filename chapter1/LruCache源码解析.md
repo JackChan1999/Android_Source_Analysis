@@ -1,6 +1,3 @@
-LruCache 源码解析
-==
-
 ## 1. 简介
 
 > LRU 是 Least Recently Used 最近最少使用算法。
@@ -313,7 +310,7 @@ public void trimToSize(int maxSize) {
 ```
 简单描述：会判断之前 `size` 是否大于 `maxSize` 。是的话，直接跳出后什么也不做。不是的话，证明已经溢出容量了。由 `makeTail` 图已知，最近经常访问的数据在最末尾。拿到一个存放 key 的 Set，然后一直一直从头开始删除，删一个判断是否溢出，直到没有溢出。
 
----  
+---
 
 最后看看：
 

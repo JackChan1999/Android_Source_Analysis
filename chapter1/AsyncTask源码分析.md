@@ -1,8 +1,10 @@
-## 一、AsyncTask源码分析
-### 1.1、简介
- AsyncTask是android提供的一种异步消息处理的解决方案，能简化我们在子线程中更新UI控件，使用AsyncTask你将看不到任何关于操作线程的代码。
-### 1.2、版本差别
-1、线程池配置
+## 1. 简介
+
+AsyncTask是android提供的一种异步消息处理的解决方案，能简化我们在子线程中更新UI控件，使用AsyncTask你将看不到任何关于操作线程的代码
+
+## 2. 版本差别
+
+2.1 线程池配置
 * android3.0以前线程池配置，代码如下所示：
 ```java
 private static final int CORE_POOL_SIZE = 5;//核心线程数量
@@ -12,37 +14,45 @@ private static final it KEEP_ALIVE = 10;//当线程数目大于核心线程数�
 private static final ThreadPoolExecutor sExecutor = new ThreadPoolExecutor(CORE_POOL_SIZE,    
         MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS, sWorkQueue, sThreadFactory);  
 ```
- android3.0以后更加灵活，根据cpu核数配置`CORE_POOL_SIZE`和`MAXIMUM_POOL_SIZE`
+android3.0以后更加灵活，根据cpu核数配置`CORE_POOL_SIZE`和`MAXIMUM_POOL_SIZE`
 ```java
 private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();//根据cpu的大小来配置核心的线程
 private static final int CORE_POOL_SIZE = CPU_COUNT + 1;//核心线程数量
 private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;//线程池中允许的最大线程数目
 private static final int KEEP_ALIVE = 1;//空闲线程的超时时间
 ```
-2、串行和并行,引用来自[这篇文章](http://www.jianshu.com/p/a8b1861f2efc)
+2.2 串行和并行,引用来自[这篇文章](http://www.jianshu.com/p/a8b1861f2efc)
+
 * android 1.5以前的时候`execute`是串行执行的
 * android 1.6直到android 2.3.2被修改为并行执行，执行任务的线程池就是THREAD_POOL_EXECUTOR
 * android 3.0以后，默认任务是串行执行的，如果想要并行执行任务可调用`executeOnExecutor(Executor exec, Params.. params)`。具体用法可参照[Android AsyncTask的骗术](http://glanwang.com/post/android/android-asynctaskde-pian-zhu)
 
-## 二、基本用法
-### 2.1、继承AsyncTask，设置子类三个泛型的参数
+## 3. 基本用法
+### 3.1 继承AsyncTask，设置子类三个泛型的参数
+
  ```java
  public abstract class AsyncTask<Params, Progress, Result>//java
  ```
- * Params     异步任务处理的参数
- * Progress   异步任务执行过程中返回给主线程的进度值，通过publishProgress()方法发送出去
- * Result     异步任务执行结束返回的结果的结果类型，可以为boolean，或者bitmap等类型
+* Params     异步任务处理的参数
+* Progress   异步任务执行过程中返回给主线程的进度值，通过publishProgress()方法发送出去
+* Result     异步任务执行结束返回的结果的结果类型，可以为boolean，或者bitmap等类型
 
-###2.2、子类必须实现的抽象方法
-（1）onPreExecute<br>执行后台耗时操作前被调用，通常用于完成一些初始化操作，比如2.3例子中初始化dialog的操作，或者一些集合容器<br>
-（2）doInBackGround<br>必须实现，异步执行后台线程将要完成的任务(该方法在子线程运行,下面源码会分析到)<br>
-（3）onProgressUpdate<br>在doInBackGround方法中调用publishProgress方法，AsyncTask就会主动调用onProgressUpdate实现更新
-任务的执行进度<br>
-（4）onPostExecute<br>当doInBackGround完成后，系统会自动调用，销毁一些dialog的操作，并将doInBackGround﻿方法返回的值传给该方法<br>
- 执行的大致流程是：
+### 3.2 子类必须实现的抽象方法
+
+- onPreExecute<br>执行后台耗时操作前被调用，通常用于完成一些初始化操作，比如2.3例子中初始化dialog的操作，或者一些集合容器<br>
+- doInBackGround<br>必须实现，异步执行后台线程将要完成的任务(该方法在子线程运行,下面源码会分析到)
+- onProgressUpdate<br>在doInBackGround方法中调用publishProgress方法，AsyncTask就会主动调用onProgressUpdate实现更新
+
+任务的执行进度
+
+- onPostExecute<br>当doInBackGround完成后，系统会自动调用，销毁一些dialog的操作，并将doInBackGround﻿方法返回的值传给该方法
+
+执行的大致流程是：
 
 `onPreExecute`-> `doInBackGround`->`onProgressUpdate(调用publishProgress的时候)`->`onPostExecute`
-###2.3、用法案例
+
+### 3.3 用法案例
+
 1、实例化子类
 ```java
 //串行实例化
@@ -52,7 +62,7 @@ new DownAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"");
 ```
 2、点击查看，[代码案例](https://github.com/white37/AndroidSdkSourceAnalysis/blob/master/source/AsyntaskActivity.java)
 
-###2.4、取消异步任务
+### 3.4 取消异步任务
 ```java
 AsyncTask.cancel(mayInterruptIfRunning);
 ```
@@ -97,7 +107,7 @@ mayInterruptIfRunning是boolean类型的(注意这里true和false的区别)，�
 * 如果线程处于休眠状态，为true则正在执行的线程将会中断，抛出异常，但执行的任务线程会继续执行完毕调用`onCanceled()`。为false则正在执行的线程不会中断，任务线程执行完毕调用`onCanceled()`。
 
 * 如果线程不处于休眠状态，为true和false都没有区别，任务线程执行完毕后调用`onCanceled()`。
-正确地取消要在`doInBackground(Void... params)`使用`isCancelled()`来判断，退出循环操作。如下面的
+  正确地取消要在`doInBackground(Void... params)`使用`isCancelled()`来判断，退出循环操作。如下面的
 ```java
         @Override
         protected Boolean doInBackground(Void... params) {
@@ -114,8 +124,8 @@ mayInterruptIfRunning是boolean类型的(注意这里true和false的区别)，�
             return true;
         }
 ```
-## 三、AsyncTask源码分析(基于android3.0以后分析)
-### 3.1、AsyncTask构造函数
+## 4. AsyncTask源码分析(基于android3.0以后分析)
+### 4.1 AsyncTask构造函数
 ```java
    /**AsyncTask的构造函数源码片段**/
    public AsyncTask() {
@@ -213,7 +223,7 @@ public class FutureTask<V> implements RunnableFuture<V>//java
 作为Runnable被线程执行，同时将Callable作为构造函数的参数传入，这样组合的好处是，假设有一个很耗时的返回值需要计算，并且这个返回值不是立刻需要的话，就可以使用这个组合，用另一个线程去计算返回值，而当前线程在使用这个返回值之前可以做其它的操作，等到需要这个返回值时，再通过Future得到。FutureTask的run方法要开始回调WorkerRunable的call方法了，call里面调用doInBackground(mParams),终于回到我们后台任务了，调用我们AsyncTask子类的`doInBackground()`,由此可以看出`doInBackground()`是在子线程中执行的，如下图所示
 ![](https://github.com/white37/AndroidSdkSourceAnalysis/blob/master/images/FutureTask(run).png)
 
-### 3.2、核心方法
+### 4.2 核心方法
 1、execute()方法
 ```java
 private static volatile Executor sDefaultExecutor = SERIAL_EXECUTOR;
@@ -392,17 +402,17 @@ private void finish(Result result) {
 如果你还不够清晰，请看下面的这个流程图。
 ![](https://github.com/white37/AndroidSdkSourceAnalysis/blob/master/images/AsyncTask%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
 
-## 四、AsyncTask需要注意的坑
+## 5. AsyncTask需要注意的坑
 * AsyncTask的对象必须在主线程中实例化，execute方法也要在主线程调用(查看3.1节-AsyncTask构造函数)
 * 同一个AsyncTask任务只能被执行一次，即只能调用一次execute方法，多次调用时将会抛异常（查看3.2里面的第二小节）
 * cancel()方法无法直接中断子线程，只是更改了中断的标志位。控制异步任务执行结束后不会回调onPostExecute()。正确的取消异步任务要cancel()方法+doInbacground()做判断跳出循环
 * AsyncTask在Activit通常作为匿名的内部类来使用，如果 AsyncTask 中的异步任务在 Activity 退出时还没执行完或者阻塞了，那么这个保持的外部的 Activity 实例得不到释放（内部类保持隐式外部类的实例的引用），最后导致会引起OOM，解决办法是：在 AsyncTask 使用弱引用外部实例，或者保证在 Activity 退出时，所有的 AsyncTask 已执行完成或被取消
 * 会产生阻塞问题，尤其是单任务顺序执行的情况下，一个任务执行时间过长会阻塞其他任务的执行
 * 不建议使用AsyncTask进行网络操作<br>
-AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you need to keep threads running for long periods of time, it is highly recommended you use the various APIs。<br> Android文档中有写到AsyncTask应该处理几秒钟的操作（通常为轻量的本地IO操作），由于网络操作存在不确定性，可能达到几秒以上，所以不建议使用。
+  AsyncTasks should ideally be used for short operations (a few seconds at the most.) If you need to keep threads running for long periods of time, it is highly recommended you use the various APIs。<br> Android文档中有写到AsyncTask应该处理几秒钟的操作（通常为轻量的本地IO操作），由于网络操作存在不确定性，可能达到几秒以上，所以不建议使用。
 
-## 五、版本兼容AsyncTaskCompat
+## 6. 版本兼容AsyncTaskCompat
 [有兴趣的可以看这篇文章](http://www.jianshu.com/p/b283b5b704e5)
 
-## 六、总结
+## 7. 总结
  尽管AsyncTask现在已经很少使用了，但是它的一些设计思路可以借鉴到我们的框架中。比如我们的代码中尽量设计灵活一些，就像AysnTask里面存在串行、并行的操作一样，提供用户同的api，让用户在不同的场景下选择不同的业务逻辑处理。

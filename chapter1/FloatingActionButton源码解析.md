@@ -1,6 +1,3 @@
-FloatingActionButton源码解析
-==
-
 ## 背景
 
 FloatingActionButton（下文以fab代替）是android support design组件库中提供的一个视图控件，是material design设计中fab的官方实现。
