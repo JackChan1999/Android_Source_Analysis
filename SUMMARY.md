@@ -56,7 +56,7 @@
   * [ViewPagerindicator 源码解析](chapter3/ViewPagerindicator 源码解析.md)
   * [Volley源码解析](chapter3/Volley源码解析.md)
   * [xUtils 源码解析](chapter3/xUtils 源码解析.md)
-* [第4期 Android源码设计模式分析](design_patterns/android_design_patterns_analysis.md)
+* [Android源码设计模式分析 第4期](design_patterns/android_design_patterns_analysis.md)
   * [面向对象六大原则](design_patterns/oop-principles/oop-principles.md)
   * [Android设计模式源码解析之单例模式](design_patterns/singleton/readme.md)
   * [Android设计模式源码解析之适配器模式](design_patterns/adapter/readme.md)

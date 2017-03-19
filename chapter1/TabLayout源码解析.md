@@ -377,7 +377,7 @@ private void setScrollPosition(int position, float positionOffset, boolean updat
 ```
 ##### 3.2.3.1 TabLayout的Indicator协同滚动
 indicator的滚动由SlidingTabStrip来处理：
-``
+
 ```java
 // Set the indicator position, if enabled
 if (updateIndicatorPosition) {

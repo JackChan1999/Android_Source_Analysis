@@ -1,9 +1,9 @@
-# NavigationView源码解析
+## NavigationView源码解析
 
 >分析版本`com.android.support:design:23.1.0`
 
 
-## 一、概述
+## 1. 概述
 
 `NavigationView`属于[`android_design_supprot_library`](http://android-developers.blogspot.com/2015/05/android-design-support-library.html)库的控件，主要是为了帮助大家去更加的方便的实现`material design`风格的app。
 
@@ -50,9 +50,9 @@ ok，简单回顾完成用法以后，我们在分析源码前，先考虑一下
 
 在早一点的版本，例如`22.2.0`，其内部是ListView实现的。
 
-## 二、源码分析
+## 2. 源码分析
 
-###（1）寻找RecyclerView
+### 2.1 寻找RecyclerView
 
 那么，既然我们已经清楚`NavigationView `内部其实就是`RecyclerView`实现了，那么接下来看源码的过程，就可以有针对有目的的去阅读了。
 
@@ -69,7 +69,7 @@ public class NavigationView extends ScrimInsetsFrameLayout {
 
     private MenuInflater mMenuInflater;
 
-  
+
     public NavigationView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
@@ -79,7 +79,7 @@ public class NavigationView extends ScrimInsetsFrameLayout {
         mMenu = new NavigationMenu(context);
 
         //省略了获取部分自定义属性的代码
-        
+
         mMenu.setCallback(new MenuBuilder.Callback() {
             @Override
             public boolean onMenuItemSelected(MenuBuilder menu, MenuItem item) {
@@ -123,7 +123,7 @@ addView((View) mPresenter.getMenuView(this));
 这里添加了一个view，调用是`mPresenter.getMenuView `，源码更进去，可以看到
 
 ```java
-#NavigationMenuPresenter
+# NavigationMenuPresenter
 @Override
 public MenuView getMenuView(ViewGroup root) {
     if (mMenuView == null) {
@@ -143,7 +143,7 @@ public MenuView getMenuView(ViewGroup root) {
 
 这个方法返回值是`NavigationMenuView `，而这个类实际上继承自`RecyclerView`。除此以外呢，可以看到这里还初始化了`NavigationMenuAdapter `，并且调用了`setAdapter()`；以及初始化了`mHeaderLayout `。顾名思义，adapter肯定是为`RecyclerView `准备的，而`mHeaderLayout `肯定是用于放置我们设置的`app:headerLayout`.
 
-###（2）数据源的初始化
+### 2.2 数据源的初始化
 
 到这里我们已经确定了`NavigationView`是个FrameLayout，其内部放置了一个`RecyclerView`，根据我们的使用情况，并不需要去单独的设置item数据，只需要使用属性`app:menu="@menu/drawer"`，所以，RecylcerView对应的Adapter所需要的数据源，肯定也是在构造方法中获取的。
 
@@ -172,7 +172,7 @@ public void updateMenuView(boolean cleared) {
     }
 }
 
-#NavigationMenuPresenter.NavigationMenuAdapter
+# NavigationMenuPresenter.NavigationMenuAdapter
 public void update() {
     prepareMenuItems();
     notifyDataSetChanged();
@@ -181,9 +181,9 @@ public void update() {
 第一个方法肯定是准备数据，第二个方法通知更新了。对于数据的准备呢，我们需要去了解下，因为`NavigationView`中的item并不是一样的，涉及到多种类型。
 
 ```java
-#NavigationMenuPresenter.NavigationMenuAdapter
+# NavigationMenuPresenter.NavigationMenuAdapter
 private void prepareMenuItems() {
-    
+
     mItems.clear();
     mItems.add(new NavigationMenuHeaderItem());
 
@@ -216,7 +216,7 @@ private void prepareMenuItems() {
                     mItems.add(new NavigationMenuSeparatorItem(
                             mPaddingSeparator, mPaddingSeparator));
                 }
-            } 
+            }
             mItems.add(new NavigationMenuTextItem(item));
             currentGroupId = groupId;
         }
@@ -250,7 +250,7 @@ private void prepareMenuItems() {
   mItems.add(new NavigationMenuTextItem(subMenuItem));
  ```
 
- * else分支（即不包含subMenu）
+* else分支（即不包含subMenu）
 
  首先判断是否是group的第一个item，如果是的话，需要额外添加一个分隔符（`NavigationMenuSeparatorItem`），否则的话直接添加一个`NavigationMenuTextItem`。
 
@@ -270,7 +270,7 @@ private void prepareMenuItems() {
 
 那么Adapter有了数据源，并且调用了`notifyDataSetChanged`，接下来应该看的代码就是Adapter内部的`onCreateViewHolder和onCreateViewHolder`等代码了。
 
-###（3）NavigationMenuAdapter
+###2.3 NavigationMenuAdapter
 
 因为我们涉及到多个item type，所以重点看三个方法，分别为：`getItemViewType`，`onCreateViewHolder`,`onBindViewHolder`。
 
@@ -384,7 +384,7 @@ public void onBindViewHolder(ViewHolder holder, int position) {
 
 显示完了之后，还有个问题，`NavigationView`的Item是可以点击了，如果大家有印象的话，`RecyclerView`自身是没有提供Item点击的回调的，那么`NavigationView`是如何做的。
 
-###（3）Item点击[onNavigationItemSelected]
+### 2.4 Item点击[onNavigationItemSelected]
 
 对于接受Item点击，只有`VIEW_TYPE_NORMAL`的itemViewType才可以，那么我们回顾下`onCreateViewHolder `方法
 
@@ -395,7 +395,7 @@ public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         case VIEW_TYPE_NORMAL:
             return new NormalViewHolder(mLayoutInflater, parent, mOnClickListener);
 	//...
-	return null ; 
+	return null ;
 }
 ```
 注意当为`VIEW_TYPE_NORMAL `的时候创建的ViewHolder传入了一个`mOnClickListener `.
@@ -459,7 +459,7 @@ public boolean invoke() {
 那么主要是`mMenu.dispatchMenuItemSelected `了
 
 ```java
-#MenuBuilder
+# MenuBuilder
 boolean dispatchMenuItemSelected(MenuBuilder menu, MenuItem item) {
     return mCallback != null && mCallback.onMenuItemSelected(menu, item);
 }
@@ -469,7 +469,7 @@ boolean dispatchMenuItemSelected(MenuBuilder menu, MenuItem item) {
 而这个`mCallback`正是在`NavigationView`构造方法中设置的。
 
 ```java
-#NavigationView
+# NavigationView
 mMenu.setCallback(new MenuBuilder.Callback() {
     @Override
     public boolean onMenuItemSelected(MenuBuilder menu, MenuItem item) {

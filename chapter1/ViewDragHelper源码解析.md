@@ -1,13 +1,11 @@
-ViewDragHelper源码解析
-=========
+## ViewDragHelper源码解析
 
-### 1.简介
-我们了解了`ViewDragHelper`是可以帮助我们处理各种拖拽事件的类.使用好`ViewDragHelper`能帮助我们做出各种酷炫的交互,今天我们就来分析一下`ViewDragHelper`的使用与实现:
+### 1. 简介
+我们了解了`ViewDragHelper`是可以帮助我们处理各种拖拽事件的类.使用好`ViewDragHelper`能帮助我们做出各种酷炫的交互,今天我们就来分析一下`ViewDragHelper`的使用与实现
 
-### 2.使用方法
+### 2. 使用方法
 
-我们这里就以[翔总的这篇文章](http://blog.csdn.net/lmj623565791/article/details/46858663)中的例子来介绍一下`ViewDragHelper`的使用.另外,本文中的demo可以在
-[这里找到](https://github.com/Skykai521/ViewDragHelperDemo)
+我们这里就以[翔总的这篇文章](http://blog.csdn.net/lmj623565791/article/details/46858663)中的例子来介绍一下`ViewDragHelper`的使用.另外,本文中的demo可以在[这里找到](https://github.com/Skykai521/ViewDragHelperDemo)
 
 首先我们创建一个`DragLayout`类并继承自`LinearLayout`,然后我们准备在`DragLayout`放置三个`View`第一个用来被我们拖动然后停止在松手的位置,第二个可以被我们拖动,松手的时候滑动到指定位置,第三个只可以通过触摸边缘来进行拖动,
 
@@ -122,18 +120,18 @@ public class DragLayout extends LinearLayout {
 }
 
 ```
-1. 我们首先在构造方法里传入了当前类的对象和我们定义的`ViewDragHelper.Callback`对象初始化了我们的`ViewDragHelper`,然后我们希望所有的边缘触摸都能触发`mEdgeTrackerView`的拖动,所以我们紧接着调用了`mDragger.setEdgeTrackingEnabled(ViewDragHelper.EDGE_ALL);`方法.
-2. 在我们定义的`Callback`中,有多个回调方法,每个回调方法都有它的作用,在代码里注释比较清楚了，我们下面也会解析每一个`Callback`中回调方法的作用.
-3. 第三步我们需要在`onInterceptTouchEvent()`方法和`onTouchEvent()`将事件委托给`ViewDragHelper`去处理,这样`ViewDragHelper`才能根据响应的事件并回调我们自己编写的`Callback`接口来进行响应的处理,
-4. 由于`ViewDragHelper`中的滑动是交给`Srcoller`类来处理的所以这里我们要重写`computeScroll()`方法,配合`Scroller`完成滚动动画.
-5. 最后在`onFinishInflate()`里获取到我们的`View`对象即可.
+-  我们首先在构造方法里传入了当前类的对象和我们定义的`ViewDragHelper.Callback`对象初始化了我们的`ViewDragHelper`,然后我们希望所有的边缘触摸都能触发`mEdgeTrackerView`的拖动,所以我们紧接着调用了`mDragger.setEdgeTrackingEnabled(ViewDragHelper.EDGE_ALL);`方法.
+-  在我们定义的`Callback`中,有多个回调方法,每个回调方法都有它的作用,在代码里注释比较清楚了，我们下面也会解析每一个`Callback`中回调方法的作用.
+-  第三步我们需要在`onInterceptTouchEvent()`方法和`onTouchEvent()`将事件委托给`ViewDragHelper`去处理,这样`ViewDragHelper`才能根据响应的事件并回调我们自己编写的`Callback`接口来进行响应的处理,
+-  由于`ViewDragHelper`中的滑动是交给`Srcoller`类来处理的所以这里我们要重写`computeScroll()`方法,配合`Scroller`完成滚动动画.
+-  最后在`onFinishInflate()`里获取到我们的`View`对象即可.
 
-### 3.类关系图
+### 3. 类关系图
 
 由于就一个类类图我们就不画了,但是作为一个强迫症患者,这个标题必须有...
 
-### 4.源码分析
-#### 1.ViewDragHelper.Callback的实现
+### 4. 源码分析
+#### 4.1 ViewDragHelper.Callback的实现
 在分析`ViewDragHelper`之前,我们先来分析一下`Callback`的定义,看看`Callback`都定义了哪些方法:
 ```java
 
@@ -220,7 +218,7 @@ public class DragLayout extends LinearLayout {
 ```
 想必注释已经很清楚了,正是这些回调方法,再结合`ViewDragHelper`中的各种方法,来帮助我们实现各种各样的拖拽的效果。
 
-#### 2.shouldInterceptTouchEvent()方法的实现
+#### 4.2 shouldInterceptTouchEvent()方法的实现
 
 在这里我们假设大家都清楚了`Android`的事件分发机制,如果不清楚请看[这里](http://blog.csdn.net/guolin_blog/article/details/9097463),要想处理触摸事件,我们需要在`onInterceptTouchEvent(MotionEvent ev)`方法里判断是否需要拦截这次触摸事件,如果此方法返回`true`则触摸事件将会交给`onTouchEvent(MotionEvent event)`处理,这样我们就能处理触摸事件了,所以我们在上面的使用方法里会这样写:
 
@@ -394,7 +392,7 @@ public class DragLayout extends LinearLayout {
 ```
 上面就是整个`shouldInterceptTouchEvent()`的实现,上面的注释也足够清楚了,我们这里就先不分析某一种触摸事件,大家可以看到我上面留了几个TODO,下文会一起分析,这里我假设大家都已经对触摸事件分发处理都有充分的理解了,我们下面就直接看`ViewDragHelper`里`processTouchEvent()`方法的实现.
 
-#### 3.processTouchEvent()方法的实现
+#### 4.3 processTouchEvent()方法的实现
 
 ```java
 
@@ -522,7 +520,7 @@ public class DragLayout extends LinearLayout {
 
 最后我们再分析上面两段代码的6个TODO:
 
-#### 4.saveInitialMotion()方法
+#### 4.4 saveInitialMotion()方法
 
 ```java
     private void saveInitialMotion(float x, float y, int pointerId) {
@@ -539,7 +537,7 @@ public class DragLayout extends LinearLayout {
     }
 
 ```
-#### 5.findTopChildUnder()方法
+#### 4.5 findTopChildUnder()方法
 
 ```java
     public View findTopChildUnder(int x, int y) {
@@ -556,7 +554,7 @@ public class DragLayout extends LinearLayout {
 ```
 代码很简单就是根据`x`和`y`坐标和来找到指定`View`,注意这里回调了`callback`中的`getOrderedChildIndex()`方法,所以我们可以在这里返回指定的`View`的`index`.
 
-#### 6.checkTouchSlop()方法
+#### 4.6 checkTouchSlop()方法
 
 ```java
     private boolean checkTouchSlop(View child, float dx, float dy) {
@@ -578,7 +576,7 @@ public class DragLayout extends LinearLayout {
 ```
 用来根据`mTouchSlop`最小拖动的距离来判断是否属于拖动,`mTouchSlop`根据我们设定的灵敏度决定.
 
-#### 7.tryCaptureViewForDrag()方法
+#### 4.7 tryCaptureViewForDrag()方法
 
 ```java
 
@@ -620,7 +618,7 @@ public class DragLayout extends LinearLayout {
 ```
 如果程序执行到这里,就证明`View`已经处于拖拽状态了,后续的触摸操作,将直接根据`mDragState`为`STATE_DRAGGING`的状态处理.
 
-#### 8.dragTo()方法的实现
+#### 4.8 dragTo()方法的实现
 
 ```java
 
@@ -654,7 +652,7 @@ public class DragLayout extends LinearLayout {
 ```
 因为`dragTo()`方法是在`processTouchEvent()`中的`MotionEvent.ACTION_MOVE case`被调用所以当程序运行到这里时`View`就会不断的被拖动了。如果一旦手指释放则最终会调用`releaseViewForPointerUp()`方法
 
-#### 8.releaseViewForPointerUp()方法的实现
+#### 4.8 releaseViewForPointerUp()方法的实现
 
 ```java
 
@@ -694,15 +692,15 @@ public class DragLayout extends LinearLayout {
 所以最后释放后的处理交给了`callback`中的`onViewReleased()`方法,如果我们什么都不做,那么这个被拖拽的`View`就是停止在当前位置,或者我们可以调用`ViewDragHelper`提供给我们的这几个方法:
 
 - settleCapturedViewAt(int finalLeft, int finalTop)
-以松手前的滑动速度为初速动，让捕获到的View自动滚动到指定位置。只能在Callback的onViewReleased()中调用。
+  以松手前的滑动速度为初速动，让捕获到的View自动滚动到指定位置。只能在Callback的onViewReleased()中调用。
 - flingCapturedView(int minLeft, int minTop, int maxLeft, int maxTop)
-以松手前的滑动速度为初速动，让捕获到的View在指定范围内fling。只能在Callback的onViewReleased()中调用。
+  以松手前的滑动速度为初速动，让捕获到的View在指定范围内fling。只能在Callback的onViewReleased()中调用。
 - smoothSlideViewTo(View child, int finalLeft, int finalTop)
-指定某个View自动滚动到指定的位置，初速度为0，可在任何地方调用。
+  指定某个View自动滚动到指定的位置，初速度为0，可在任何地方调用。
 
 引用自[这篇文章](http://www.cnphp6.com/archives/87727),具体释放后的原理我们就不分析了,其实就是配合`Scroller`这个类来实现,具体也可以参照上面这篇文章。好,我们关于`ViewDragHelper`的源码分析就到这里.
 
-### 5.开源项目中的使用
+### 5. 开源项目中的使用
 
 `ViewDragHelper`在各种关于拖拽和各种手势动画的开源库中使用广泛,我这里就简要列出一些,大家可以多去看看是如何使用`ViewDragHelper`的:
 
@@ -710,5 +708,5 @@ public class DragLayout extends LinearLayout {
 - [android-card-slide-panel](https://github.com/xmuSistone/android-card-slide-panel)
 - [FlowingDrawer](https://github.com/mxn21/FlowingDrawer)
 
-### 6.个人评价
-`ViewDragHelper`的出现,大大简化了我们开发相关触摸和拖拽功能的复杂度和代码量,帮助我们比较容易的实现各种效果,让我们开发酷炫的交互更加容易了。但是从一些开源项目中发现,`ViewDragHelper`中还是有一些不足之处,比如给`Scroller`提供了一个固定的`Interpolator`,导致如果我们想实现例如反弹效果的话,还要把`ViewDragHelper`的代码拷贝一份并修改`Interpolator`,这样做肯定是不太好的.当然建议我们自己修改一个`ViewDragHelper`后如果项目里有多处使用,可以包装成一个提供给我们自己项目的模块使用,防止出现更多的多余代码.
+### 6. 个人评价
+`ViewDragHelper`的出现,大大简化了我们开发相关触摸和拖拽功能的复杂度和代码量,帮助我们比较容易的实现各种效果,让我们开发酷炫的交互更加容易了。但是从一些开源项目中发现,`ViewDragHelper`中还是有一些不足之处,比如给`Scroller`提供了一个固定的`Interpolator`,导致如果我们想实现例如反弹效果的话,还要把`ViewDragHelper`的代码拷贝一份并修改`Interpolator`,这样做肯定是不太好的.当然建议我们自己修改一个`ViewDragHelper`后如果项目里有多处使用,可以包装成一个提供给我们自己项目的模块使用,防止出现更多的多余代码

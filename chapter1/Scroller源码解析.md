@@ -1,9 +1,9 @@
 > 本文分析版本: **Android API 22**
 
-## 1.简介
+## 1. 简介
 `Android`开发中，如果我们希望使一个`View`滑动的话，除了使用属性动画外。我们还可以使用系统提供给我们的两个类`Scroller`和`OverScroller`用来实现弹性滑动。在我以前的一篇[ViewDragHelper源码分析](http://www.jianshu.com/p/07d717ef0b28)中我们有讲到过`Scroller`的作用。那么我们今天就来仔细分析一下`Scroller`的使用方法以及实现方式。
 
-## 2.使用方法
+## 2. 使用方法
 在看`Scroller`的使用方法之前我们需要先了解一下`View`中的`scrollBy()`和`scrollTo()`方法，`scrollTo()`方法的实现如下：
 
 ```java
@@ -94,7 +94,7 @@ public class ScrollTextView extends TextView {
 - minY Y方向上滑动的最小值，不会滑动超过这个点
 - maxY Y方向上滑动的最大值，不会滑动超过这个点
 
-## 3.源码分析
+## 3. 源码分析
 我们依然通过调用流程来分析`Scroller`的实现：
 
 ### 1.构造方法
@@ -355,6 +355,6 @@ public boolean computeScrollOffset() {
 ```
 我并没有看懂这段代码的实际意义。网上也没有找到比较清晰的解释。通过`debug`得知`SPLINE_POSITION`是一个长度为`101`并且从`0-1`递增数组。猜想这应该是一个函数模型并且最终用于计算出滑动过程中的加速度与位置。至此`Scroller`的两个主要方法的实现我们就分析完了。
 
-## 4.OverScroller解析
+## 4. OverScroller解析
 
 `OverScroller`是对`Scroller`的拓展，它在`Scroller`的基础上拓展出了更多的方法。`OverScroller`的`fling`方法支持滑动到终点之后并超出一段距离并返回，类似于弹性效果。另外一个`springBack()`方法是指将指定的点平滑滚动到指定的终点上。这个终点由设置的参数决定。原理我们就不再探究了，大家可以自行研究这两个类的差别。最后具体的使用方法在文章最上面的`demo`里都有提供。可以`clone`下来帮助理解。

@@ -350,10 +350,6 @@ private void hide(@Nullable OnVisibilityChangedListener listener, boolean fromUs
 
 fab并不直接与`CoordinatorLayout`联系，而是通过`CoordinatorLayout#Behavior`作为桥梁。`CoordinatorLayout`类通过`CoordinatorLayout#Behavior`可以间接控制其直系子View的行为，能控制什么行为？View测量、布局、touch事件拦截、监听、NestedScroll等等。是不是很屌。
 
-
-
-
-
 fab内部实现了`CoordinatorLayout#Behavior`抽象类。该抽象类有如下接口:
 
 ```java
@@ -460,7 +456,6 @@ public static abstract class Behavior<V extends View> {
 fab实现此抽象类:
 
 ```java
-
 public static class Behavior extends CoordinatorLayout.Behavior<FloatingActionButton> {}
 ```
 

@@ -4,15 +4,13 @@
 
 我们在这里不仅要探讨SharePreference如何使用，还要探讨其源码是如何实现的；同时还要在下一篇博客讨论由SharePreference衍生出来的Preference相关Android组件实现，不过有意思的是我前几天在网上看见有人对google的Preference有很大争议，有人说他就是鸡肋，丑而不灵活自定义，有人说他是一个标准，很符合设计思想，至于谁说的有道理，我想看完本文和下一篇文章你自然会有自己的观点看法的，还有一点就是关于使用SharePreference耗时问题也是一个争议，分析完再说吧，那就现在开始分析吧（基于API 22源码）。
 
-**【工匠若水 http://blog.csdn.net/yanbober 转载请注明出处。点我开始Android技术交流】**
-
 ## **2 SharePreferences基本使用实例**
 
 在Android提供的几种数据存储方式中SharePreference属于轻量级的键值存储方式，以XML文件方式保存数据，通常用来存储一些用户行为开关状态等，也就是说SharePreference一般的存储类型都是一些常见的数据类型（PS：当然也可以存储一些复杂对象，不过需要曲线救国，下面会给出存储复杂对象的解决方案的）。
 
 在我们平时应用开发时或多或少都会用到SharePreference，这里就先给出一个常见的使用实例，具体如下：
 
-```
+```java
 public class MainActivity extends ActionBarActivity {
     private SharedPreferences mSharedPreferences;
     private SharedPreferences mSharedPreferencesContext;
@@ -40,7 +38,7 @@ public class MainActivity extends ActionBarActivity {
         editorActivity.putString("name", "haha");
         editorActivity.commit();
     }
-}1234567891011121314151617181920212223242526272812345678910111213141516171819202122232425262728
+}
 ```
 
 运行之后adb进入data应用包下的shared_prefs目录可以看见如下结果：
@@ -52,7 +50,7 @@ public class MainActivity extends ActionBarActivity {
 
 其内容分别如下：
 
-```
+```xml
 at Test.xml
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
@@ -67,12 +65,10 @@ at MainActivity.xml
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
     <string name="name">haha</string>
-</map>123456789101112131415123456789101112131415
+</map>
 ```
 
 可以看见SharePreference的使用还是非常简单easy的，所以不做太多的使用说明，我们接下来重点依然是关注其实现原理。
-
-**【工匠若水 http://blog.csdn.net/yanbober 转载请注明出处。点我开始Android技术交流】**
 
 ## **3 SharePreferences源码分析**
 
@@ -80,7 +76,7 @@ at MainActivity.xml
 
 其实讲句实话，SharePreference的源码没啥深奥的东东，其实质和ACache类似，都算时比较独立的东东。分析之前我们还是先来看下SharePreference这个类的源码，具体如下：
 
-```
+```java
 //你会发现SharedPreferences其实是一个接口而已
 public interface SharedPreferences {
     //定义一个用于在数据发生改变时调用的监听回调
@@ -124,7 +120,7 @@ public interface SharedPreferences {
     void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener);
     //注销一个之前(注册)的回调函数
     void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener);
-}12345678910111213141516171819202122232425262728293031323334353637383940414243441234567891011121314151617181920212223242526272829303132333435363738394041424344
+}
 ```
 
 很明显的可以看见，SharePreference源码其实是很简单的。既然这里说了SharePreference类只是一个接口，那么他一定有自己的实现类的，怎么办呢？我们继续往下看。
@@ -135,7 +131,7 @@ public interface SharedPreferences {
 
 先来看下Activity的getPreferences方法源码，如下：
 
-```
+```java
     public SharedPreferences getPreferences(int mode) {
         return getSharedPreferences(getLocalClassName(), mode);
     }123123
@@ -143,7 +139,7 @@ public interface SharedPreferences {
 
 哎？可以发现，其实Activity的SharePreference实例获取方法只是对Context的getSharedPreferences再一次封装而已，使用getPreferences方法获取实例默认生成的xml文件名字是当前activity类名而已。既然这样那我们还是转战Context（其实现在ContextImpl中，至于不清楚Context与ContextImpl及Activity关系的请先看这篇博文，[点我迅速脑补](http://blog.csdn.net/yanbober/article/details/45967639)）的getSharedPreferences方法，具体如下：
 
-```
+```java
 //ContextImpl类中的静态Map声明，全局的一个sSharedPrefs
 private static ArrayMap<String, ArrayMap<String, SharedPreferencesImpl>> sSharedPrefs;
 
@@ -197,12 +193,12 @@ public SharedPreferences getSharedPreferences(String name, int mode) {
     }
     //返回SharedPreferences实例对象sp
     return sp;
-}123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354
+}
 ```
 
 我们可以发现，上面方法中首先调运了getSharedPrefsFile来获取一个File对象，所以我们继续先来看下这个方法，具体如下：
 
-```
+```java
     public File getSharedPrefsFile(String name) {
         //依据我们传入的文件名字符串创建一个后缀为xml的文件
         return makeFilename(getPreferencesDir(), name + ".xml");
@@ -216,7 +212,7 @@ public SharedPreferences getSharedPreferences(String name, int mode) {
             }
             return mPreferencesDir;
         }
-    }12345678910111213141234567891011121314
+    }
 ```
 
 可以看见，原来SharePreference文件存储路径和文件创建是这个来的。继续往下看可以发现接着调运了SharedPreferencesImpl的构造函数，至于这个构造函数用来干嘛，下面会分析。
@@ -227,7 +223,7 @@ public SharedPreferences getSharedPreferences(String name, int mode) {
 
 好了，还记不记得上面我们分析留的尾巴呢？现在我们就来看看这个尾巴，可以发现SharedPreferencesImpl类其实就是SharedPreferences接口的实现类，其构造函数如下：
 
-```
+```java
 final class SharedPreferencesImpl implements SharedPreferences {
     ......
     //构造函数，file是前面分析data目录下创建的传入name的xml文件，mode为传入的访问方式
@@ -262,12 +258,12 @@ final class SharedPreferencesImpl implements SharedPreferences {
             }
         }.start();
     }
-}12345678910111213141516171819202122232425262728293031323334351234567891011121314151617181920212223242526272829303132333435
+}
 ```
 
 好了，到这里你会发现整个SharedPreferencesImpl的构造函数很简单，那我们就继续分析真正的异步加载文件到内存过程，如下：
 
-```
+```java
     private void loadFromDiskLocked() {
         //如果已经异步加载直接return返回
         if (mLoaded) {
@@ -317,7 +313,7 @@ final class SharedPreferencesImpl implements SharedPreferences {
         }
         //唤醒其他等待线程（其实就是调运该类的getXXX方法的线程），因为在getXXX时会通过mLoaded标记是否进入wait，所以这里需要notify
         notifyAll();
-    }12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849501234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950
+    }
 ```
 
 OK，到此整个Android应用获取SharePreference实例的过程我们就分析完了，简单总结下如下：
@@ -326,7 +322,7 @@ OK，到此整个Android应用获取SharePreference实例的过程我们就分�
 
 分析完了构造实例化，我们回忆可以知道使用SharePreference可以通过getXXX方法直接获取已经存在的key-value数据，下面我们就来看下这个过程，这里我们随意看一个方法即可，如下：
 
-```
+```java
     public boolean getBoolean(String key, boolean defValue) {
         //可以看见，和上面异步load数据使用的是同一个对象锁
         synchronized (this) {
@@ -337,12 +333,12 @@ OK，到此整个Android应用获取SharePreference实例的过程我们就分�
             //存在返回找到的值，不存在返回设置的defValue
             return v != null ? v : defValue;
         }
-    }12345678910111234567891011
+    }
 ```
 
 先不解释，我们来关注下上面方法调运的awaitLoadedLocked方法，具体如下：
 
-```
+```java
     private void awaitLoadedLocked() {
         ......
         //核心，这就是异步阻塞等待
@@ -352,7 +348,7 @@ OK，到此整个Android应用获取SharePreference实例的过程我们就分�
             } catch (InterruptedException unused) {
             }
         }
-    }1234567891012345678910
+    }
 ```
 
 哈哈，不解释，这也太赤裸裸的明显了，就是阻塞，就是这么任性，没辙。那我们继续攻占高地呗，get完事了，那就是set了呀。
@@ -361,7 +357,7 @@ OK，到此整个Android应用获取SharePreference实例的过程我们就分�
 
 还记不记得set是在SharePreference接口的Editor接口中定义的，而SharePreference提供了edit()方法来获取Editor实例，我们先来看下这个edit()方法吧，如下：
 
-```
+```java
     public Editor edit() {
         //握草！这也和异步load用的一把锁
         synchronized (this) {
@@ -370,12 +366,12 @@ OK，到此整个Android应用获取SharePreference实例的过程我们就分�
         }
     //异步加载OK以后通过EditorImpl创建Editor实例
         return new EditorImpl();
-    }123456789123456789
+    }
 ```
 
 可以看见，SharePreference的edit()方法其实就是阻塞等待返回一个Editor的实例（Editor的实现是EditorImpl），那我们就顺藤摸瓜一把，来看下这个EditorImpl这个类，如下：
 
-```
+```java
     public final class EditorImpl implements Editor {
         //创建一个mModified的key-value集合，用来在内存中暂存数据
         private final Map<String, Object> mModified = Maps.newHashMap();
@@ -407,12 +403,12 @@ OK，到此整个Android应用获取SharePreference实例的过程我们就分�
             }
         }
         ......
-    }12345678910111213141516171819202122232425262728293031321234567891011121314151617181920212223242526272829303132
+    }
 ```
 
 好了，到此你可以发现Editor的setXXX及clear操作仅仅只是将相关数据暂存到内存中或者设置好标记为，也就是说调运了Editor的putXXX后其实数据是没有存入SharePreference的。那么通过我们一开始的实例可以知道，要想将Editor的数据存入SharePreference文件需要调运Editor的commit或者apply方法来生效。所以我们接下来先来看看Editor类常用的commit方法实现原理，如下：
 
-```
+```java
 public boolean commit() {
     //1.先通过commitToMemory方法提交到内存
     MemoryCommitResult mcr = commitToMemory();
@@ -429,12 +425,12 @@ public boolean commit() {
     notifyListeners(mcr);
     //4.返回写文件是否成功状态
     return mcr.writeToDiskResult;
-}12345678910111213141516171234567891011121314151617
+}
 ```
 
 我去，小小一个commit方法做了这么多操作，主要分为四个步骤，我们先来看下第一个步骤，通过commitToMemory方法提交到内存返回一个MemoryCommitResult对象。分析commitToMemory方法前先看下MemoryCommitResult这个类，具体如下：
 
-```
+```java
 // Return value from EditorImpl#commitToMemory()
 //也是内部类，只是为了组织数据结构而诞生，也就是EditorImpl.commitToMemory()的返回值
 private static class MemoryCommitResult {
@@ -449,12 +445,12 @@ private static class MemoryCommitResult {
         writeToDiskResult = result;
         writtenToDiskLatch.countDown();
     }
-}123456789101112131415123456789101112131415
+}
 ```
 
 回过头现在来看commitToMemory方法，具体如下：
 
-```
+```java
 // Returns true if any changes were made
 private MemoryCommitResult commitToMemory() {
     //啥也不说，先整一个实例化对象
@@ -534,12 +530,12 @@ private MemoryCommitResult commitToMemory() {
     }
     //返回重新更新过mMap值封装的数据结构
     return mcr;
-}   12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879801234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980
+}   
 ```
 
 到此我们Editor的commit方法的第一步已经完成，根据写操作组织内存数据，返回组织后的[数据结构](http://lib.csdn.net/base/datastructure)。接下来我们继续回到commit方法看下第二步—-写到文件中，其核心是调运SharedPreferencesImpl类的enqueueDiskWrite方法实现。具体如下：
 
-```
+```java
 //按照队列把内存数据写入磁盘，commit时postWriteRunnable为null，apply时不为null
 private void enqueueDiskWrite(final MemoryCommitResult mcr,
                               final Runnable postWriteRunnable) {
@@ -581,12 +577,12 @@ private void enqueueDiskWrite(final MemoryCommitResult mcr,
     }
     //如果是apply就在线程池中执行
     QueuedWork.singleThreadExecutor().execute(writeToDiskRunnable);
-}123456789101112131415161718192021222324252627282930313233343536373839404142123456789101112131415161718192021222324252627282930313233343536373839404142
+}
 ```
 
 可以发现，commit从内存写文件是在当前调运线程中直接执行的。那我们再来看看这个写内存到磁盘方法中真正的写方法writeToFile，如下：
 
-```
+```java
     // Note: must hold mWritingToDiskLock
     private void writeToFile(MemoryCommitResult mcr) {
         if (mFile.exists()) {
@@ -656,14 +652,14 @@ private void enqueueDiskWrite(final MemoryCommitResult mcr,
         }
         //写失败了
         mcr.setDiskWriteResult(false);
-    }1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697012345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970
+    }
 ```
 
 回过头可以发现，上面commit的第二步写磁盘操作其实是做了类似数据库的事务操作机制的（备份文件）。接着可以继续分析commit方法的第三四步，很明显可以看出，第三步就是回调设置的监听方法，通知数据变化了，第四步就是返回commit写文件是否成功。
 
 总体到这里你可以发现，一个常用的SharePreferences过程已经完全分析完毕。接下来我们就再简单说说Editor的apply方法原理，先来看下Editor的apply方法，如下：
 
-```
+```java
 public void apply() {
     //有了上面commit分析，这个雷同，写数据到内存，返回数据结构
     final MemoryCommitResult mcr = commitToMemory();
@@ -694,7 +690,7 @@ public void apply() {
     // changes reflected in memory.
     //通知变化
     notifyListeners(mcr);
-}1234567891011121314151617181920212223242526272829303112345678910111213141516171819202122232425262728293031
+}
 ```
 
 看到了吧，其实和commit类似，只不过他是异步写的，没在当前线程执行写文件操作，还有就是他不像commit一样返回文件是否写成功状态。
@@ -711,8 +707,6 @@ public void apply() {
 
 可以发现，在简单数据行为状态存储中，Android的SharedPreferences是一个安全而且不错的选择。
 
-**【工匠若水 http://blog.csdn.net/yanbober 转载请注明出处。点我开始Android技术交流】**
-
 ## **4 SharePreferences进阶项目解决方案**
 
 其实分析完源码之后也就差不多了。这里所谓的进阶项目解决方案只是曲线救国的2B行为，只是表明还有这么一种方案，至于项目中是否值得提倡那就要综合酌情考虑了。
@@ -723,7 +717,7 @@ public void apply() {
 
 我们有时候可能会涉及到存储一个自定义对象到SharedPreferences中，这个怎么实现呢？标准的SharedPreferences的Editor只提供几个常见类型的put方法呀，其实可以实现的，原理就是Base64转码为字符串存储，如下给出我的一个工具类，在项目中可以直接使用：
 
-```
+```java
 /**
  * @author 工匠若水
  * @version 1.0
@@ -815,7 +809,7 @@ public final class ObjectSharedPreferences {
         }
         return null;
     }
-}12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838485868788899091921234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192
+}
 ```
 
 好了，没啥解释的，依据需求自己决定吧，这只是一种方案而已，其替代方案很多。
@@ -828,7 +822,7 @@ Android系统有自己的一套安全机制，当应用程序在安装时系统�
 
 **服务端：**
 
-```
+```java
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView mTextView;
     private EditText mEditText;
@@ -856,12 +850,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.putString("input", mEditText.getText().toString());
         editor.commit();
     }
-}1234567891011121314151617181920212223242526272812345678910111213141516171819202122232425262728
+}
 ```
 
 **客户端：**
 
-```
+```java
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView mTextView;
     private EditText mEditText;
@@ -900,12 +894,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.putString("input", mEditText.getText().toString());
         editor.commit();
     }
-}123456789101112131415161718192021222324252627282930313233343536373839123456789101112131415161718192021222324252627282930313233343536373839
+}
 ```
 
 不解释，需求自己看情况吧，这就是一个经典的跨进程访问SharedPreferences，主要原理就是设置flag然后获取其他App的Context。
-
-**【工匠若水 http://blog.csdn.net/yanbober 转载请注明出处。点我开始Android技术交流】**
 
 ## **5 SharePreferences总结**
 

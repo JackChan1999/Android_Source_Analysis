@@ -349,8 +349,6 @@ protected void entryRemoved(boolean evicted, K key, V oldValue, V newValue) {
 > 本地方法栈和程序计数器是线程隔离的数据区  
 
 
-
-
 ## 5. 开源项目中的使用
 
 [square/picasso](https://github.com/square/picasso)
@@ -369,8 +367,6 @@ LruCache重要的几点：
 - **4.**覆写 `entryRemoved` 方法能知道 LruCache 数据移除是是否发生了冲突，也可以去手动释放资源。
 
 - **5.**`maxSize` 和 `sizeOf(K key, V value)` 方法的覆写息息相关，必须相同单位。（ 比如 maxSize 是7MB，自定义的 sizeOf 计算每个数据大小的时候必须能算出与MB之间有联系的单位 ）
-
-
 
 
 ## 7. 资源

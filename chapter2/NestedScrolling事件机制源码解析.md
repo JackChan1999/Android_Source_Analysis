@@ -11,58 +11,58 @@ Android在发布 5.0（Lollipop）版本之后，Google为我们提供了嵌套�
 
 从[NestedScrollingChild](http://developer.android.com/reference/android/support/v4/view/NestedScrollingChild.html)说起，它是个接口，定义如下：
 
-```
+```java
 public interface NestedScrollingChild {  
-    /** 
+    /**
      * 设置嵌套滑动是否能用
-     * 
+     *
      *  @param enabled true to enable nested scrolling, false to disable
      */  
     public void setNestedScrollingEnabled(boolean enabled);  
 
-    /** 
-     * 判断嵌套滑动是否可用 
-     * 
+    /**
+     * 判断嵌套滑动是否可用
+     *
      * @return true if nested scrolling is enabled
      */  
     public boolean isNestedScrollingEnabled();  
 
-    /** 
+    /**
      * 开始嵌套滑动
-     * 
+     *
      * @param axes 表示方向轴，有横向和竖向
      */  
     public boolean startNestedScroll(int axes);  
 
-    /** 
-     * 停止嵌套滑动 
+    /**
+     * 停止嵌套滑动
      */  
     public void stopNestedScroll();  
 
-    /** 
-     * 判断是否有父View 支持嵌套滑动 
+    /**
+     * 判断是否有父View 支持嵌套滑动
      * @return whether this view has a nested scrolling parent
      */  
     public boolean hasNestedScrollingParent();  
 
-    /** 
+    /**
      * 在子View的onInterceptTouchEvent或者onTouch中，调用该方法通知父View滑动的距离
      *
      * @param dx  x轴上滑动的距离
      * @param dy  y轴上滑动的距离
      * @param consumed 父view消费掉的scroll长度
      * @param offsetInWindow   子View的窗体偏移量
-     * @return 支持的嵌套的父View 是否处理了 滑动事件 
+     * @return 支持的嵌套的父View 是否处理了 滑动事件
      */  
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow);  
 
-    /** 
+    /**
      * 子view处理scroll后调用
      *
-     * @param dxConsumed x轴上被消费的距离（横向） 
+     * @param dxConsumed x轴上被消费的距离（横向）
      * @param dyConsumed y轴上被消费的距离（竖向）
-     * @param dxUnconsumed x轴上未被消费的距离 
-     * @param dyUnconsumed y轴上未被消费的距离 
+     * @param dxUnconsumed x轴上未被消费的距离
+     * @param dyUnconsumed y轴上未被消费的距离
      * @param offsetInWindow 子View的窗体偏移量
      * @return  true if the event was dispatched, false if it could not be dispatched.
      */  
@@ -71,21 +71,21 @@ public interface NestedScrollingChild {
 
 
 
-    /** 
-     * 滑行时调用 
+    /**
+     * 滑行时调用
      *
      * @param velocityX x 轴上的滑动速率
      * @param velocityY y 轴上的滑动速率
-     * @param consumed 是否被消费 
+     * @param consumed 是否被消费
      * @return  true if the nested scrolling parent consumed or otherwise reacted to the fling
      */  
     public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed);  
 
-    /** 
+    /**
      * 进行滑行前调用
      *
      * @param velocityX x 轴上的滑动速率
-     * @param velocityY y 轴上的滑动速率 
+     * @param velocityY y 轴上的滑动速率
      * @return true if a nested scrolling parent consumed the fling
      */  
     public boolean dispatchNestedPreFling(float velocityX, float velocityY);  
@@ -95,7 +95,7 @@ public interface NestedScrollingChild {
 以上方法数不多，请详细看看。
 那它的作用是什么呢？让我们想想一种场景：CoordinatorLayout里嵌套着RecyclerView和Toolbar,我们上下滑动RecyclerView的时候，Toolbar会随之显现隐藏,这是典型的嵌套滑动机制情景。这里，RecyclerView作为嵌套的子View,我们猜测，它一定实现了NestedScrollingChild 接口（去看看它的定义就知道了，猜你个头）
 
-```
+```java
 public class RecyclerView extends ViewGroup implements ScrollingView, NestedScrollingChild {
 ..................................................................................
 }
@@ -103,7 +103,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
 
 所以RecyclerView 实现了NestedScrollingChild 接口里的方法，我们在跟进去看看各个方法是怎么实现的？
 
-```
+```java
     @Override
     public void setNestedScrollingEnabled(boolean enabled) {
         getScrollingChildHelper().setNestedScrollingEnabled(enabled);
@@ -154,7 +154,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
 
 从上面的代码可以看出，全部都交给`getScrollingChildHelper()`这个方法的返回对象处理了，看看这个方法是怎么实现的。
 
-```
+```java
    private NestedScrollingChildHelper getScrollingChildHelper() {
         if (mScrollingChildHelper == null) {
             mScrollingChildHelper = new NestedScrollingChildHelper(this);
@@ -167,7 +167,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
 
 *NestedScrollingChildHelper#startNestedScroll*
 
-```
+```java
     public boolean startNestedScroll(int axes) {
         if (hasNestedScrollingParent()) {
              return true;
@@ -206,7 +206,7 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
 
 接下来，在来看看嵌套滑动父view *NestedScrollingParent*，定义如下
 
-```
+```java
 public interface NestedScrollingParent {
 
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes);
@@ -220,7 +220,7 @@ public interface NestedScrollingParent {
 
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed);
 
-    public boolean onNestedFling(View target, float velocityX, 
+    public boolean onNestedFling(View target, float velocityX,
                                                       float velocityY,boolean consumed);
 
     public boolean onNestedPreFling(View target, float velocityX, float velocityY);
@@ -249,7 +249,7 @@ public interface NestedScrollingParent {
 
 如果你此刻还是看得模模糊糊，没错，是我的责任，啊哈哈哈。要不我给个例子实践下，我们知道5.0之前的ListView是没有实现NestedScrollingChild这个接口的，如果要实现CoordinatorLayout里嵌套着ListView和Toolbar,我们上下滑动ListView的时候，Toolbar会随之显现隐藏,就必须重写ListView.给出我实现的代码吧！
 
-```
+```java
 package com.cjj.nestedlistview;
 
 import android.content.Context;

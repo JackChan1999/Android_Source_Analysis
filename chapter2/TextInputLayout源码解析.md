@@ -1,9 +1,8 @@
-#### 1、简介
+### 1、简介
 TextInputLayout 是android support design库里的一个控件，本文介绍的版本24.0.0-alpha2。该控件是一个容器，里面可以包含EditText用于输入内容(官方建议使用TextInputEditText)，当EditText获取焦点的时候，hint可以以动画的形式移动到EditText的上面位置，用于显示提示内容；edittext左下角可以显示错误的提示，例如密码输入错误的提示，右下角可以显示输入的内容长度，下面详细介绍该控件。
 
-- - -
+### 2、相关类：
 
-#### 2、相关类：
 相关的类我已经从design里面抽取出来了，具体可以看demo的内容：
 
 ![](class.png)
@@ -14,9 +13,7 @@ TextInputLayout：继承LinearLayout，用于盛放EditText，主要的容器。
 
 CollapsingTextHelper：处理hint文字收起和展开动画。
 
-- - -
-
-#### 3、结构和使用方法
+### 3、结构和使用方法
 演示如下：
 
 ![](demo.gif)
@@ -38,7 +35,7 @@ CollapsingTextHelper：处理hint文字收起和展开动画。
 
 ![](struct.png)
 
-#### 4、具体的源码分析
+### 4、具体的源码分析
 布局文件里TextInputLayout里包含了EditText，现在从加载EditText开始研究，TextInputLayout里面重写了addView，初始化的时候调用updateEditTextMargin设置上面需要预留的空间，用于hint做动画，再setEditText把EditText设置进去：
 ```java
     @Override
@@ -150,7 +147,7 @@ addView结束后再看看onLayout里面做了些啥，之前说过动画是在Co
         if (mHintEnabled && mEditText != null) {
             final int l = mEditText.getLeft() + mEditText.getCompoundPaddingLeft();
             final int r = mEditText.getRight() - mEditText.getCompoundPaddingRight();
-            
+
             //初始化mCollapsingTextHelper里展开时的矩形区域ExpandedBounds
             mCollapsingTextHelper.setExpandedBounds(l,
                     mEditText.getTop() + mEditText.getCompoundPaddingTop(),
@@ -166,7 +163,6 @@ addView结束后再看看onLayout里面做了些啥，之前说过动画是在Co
         }
     }
 ```
-
 onLayout后，基本上就完成了初始化的工作了，显示的时候都是比较正常的，就是一个EditTExt，来看看焦点改变的时候动画是怎么完成的，点击的时候hint文字会向上移动的动画，触发是在refreshDrawableState里面的updateLabelState：
 ```java
     @Override
@@ -207,7 +203,6 @@ updateLabelState是更新上面提示文本的状态，animate参数是否有动
 动画实现的流程如下图：
 
 ![](anim.png)
-
 
 collapseHint和expandHint基本上是一样的，只是最终的状态不一样，如果没有动画就直接调用mCollapsingTextHelper.setExpansionFraction()方法设置好最终状态；如果有动画，也是通过这个方法设置，只是在UpdateListener里面通过获取动画进行的百分比再设置对应的位置。
 
@@ -368,6 +363,7 @@ public void draw(Canvas canvas) {
     }
 ```
 到这里动画的部分就介绍完了。接着介绍错误提示框是怎么加载进去的,通过setErrorEnabled可以设置是否显示错误提示，但是如果直接调用setError(@Nullable final CharSequence error)，会默认调用setErrorEnabled(true)打开错误提示。当设置为true的时候会先new 一个TextView再把textView添加到底栏的LinearLayout里面。如果为false的话，会把ErrorView移除，移除。。所以如果true和false来回切，会导致布局跳动..这真是个大坑，视觉UI绝对不会允许这种跳跃：
+
 ```java
 public void setErrorEnabled(boolean enabled) {
         if (mErrorEnabled != enabled) {
@@ -429,16 +425,12 @@ addIndicator里面用添加view，index为位置，如果为错误提示View的�
 
 setCounterEnabled和上面setErrorEnable是一样的，这里就不再赘述了。至此，TextInputLayout大部分相关的东西基本都介绍完了。
 
-#### 4、总结
+### 4. 总结
 
 TextInputLayout是一个比较简单的控件，不过动画的部分实现的比较复杂，该控价使用起来确实很方便，不过存在一些缺点，以下是我在使用时遇到的一些问题。
 
-1、无法设置/获取上面文字的颜色，大小，间距等，下面的错误提示内容也是一样无法设置。
-
-2、无法设置动画时间，在代码里写死了。
-
-3、显示错误提示后高度会变化。
-
-4、显示文字个数，超出数量后闪退。
-
-5、如果包含的edittext有android:layout_marginLeft="10dp" ，这样布局有问题，这个修改在代码里有做备注。
+- 无法设置/获取上面文字的颜色，大小，间距等，下面的错误提示内容也是一样无法设置
+- 无法设置动画时间，在代码里写死了
+- 显示错误提示后高度会变化
+- 显示文字个数，超出数量后闪退
+- 如果包含的edittext有android:layout_marginLeft="10dp" ，这样布局有问题，这个修改在代码里有做备注

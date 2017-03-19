@@ -8,13 +8,13 @@
 
 TextView内部除了继承自View的相关属性和measure、layout、draw步骤，还包括：
 
- 1. **Layout**: TextView的文字排版、折行策略以及文本绘制都是在Layout里面完成的，TextView的自身测量也受Layout的影响。Layout是TextView执行setText方法后，由TextView内部创建的实例，并不能由外部提供。可以用getLayout()方法获取。
- 2. **TransformationMethod**: 用来处理最终的显示结果的类，例如显示密码的时候把密码转换成圆点。这个类并不直接影响TextView内部储存的Text，只影响显示的结果。
- 3. **MovementMethod**: 用来处理TextView内部事件响应的类，可以针对TextView内文本的某一个区域做软键盘输入或者触摸事件的响应。
- 4. **Drawables**: TextView的静态内部类，用来处理和储存TextView的CompoundDrawables,包括TextView的上下左右的Drawable以及错误提示的Drawable。
- 5. **Spans**: Spans并不是特定的某一个类或者实现了某一个接口的类。它可以是任意类型，Spans实际上做的事情是在TextView的内部的text的某一个区域做标记。其中有部分Spans可以影响TextView的绘制和测量，如ImageSpan、BackgroundColorSpan、AbsoluteSizeSpan。还有可以响应点击事件的ClickableSpan。
- 6. **Editor**: TextView作为可编辑文本控件的时候(EditText)，使用Editor来处理文本的区域选择处理和判断、拼写检查、弹出文本菜单等。
- 7. **InputConnection**: EditText的文本输入部分是在TextView中完成的。而InputConnection是软键盘和TextView之间的桥梁，所有的软键盘的输入文字、修改文字和删除文字都是通过InputConnection传递给TextView的。
+- **Layout**: TextView的文字排版、折行策略以及文本绘制都是在Layout里面完成的，TextView的自身测量也受Layout的影响。Layout是TextView执行setText方法后，由TextView内部创建的实例，并不能由外部提供。可以用getLayout()方法获取。
+- **TransformationMethod**: 用来处理最终的显示结果的类，例如显示密码的时候把密码转换成圆点。这个类并不直接影响TextView内部储存的Text，只影响显示的结果。
+- **MovementMethod**: 用来处理TextView内部事件响应的类，可以针对TextView内文本的某一个区域做软键盘输入或者触摸事件的响应。
+- **Drawables**: TextView的静态内部类，用来处理和储存TextView的CompoundDrawables,包括TextView的上下左右的Drawable以及错误提示的Drawable。
+- **Spans**: Spans并不是特定的某一个类或者实现了某一个接口的类。它可以是任意类型，Spans实际上做的事情是在TextView的内部的text的某一个区域做标记。其中有部分Spans可以影响TextView的绘制和测量，如ImageSpan、BackgroundColorSpan、AbsoluteSizeSpan。还有可以响应点击事件的ClickableSpan。
+- **Editor**: TextView作为可编辑文本控件的时候(EditText)，使用Editor来处理文本的区域选择处理和判断、拼写检查、弹出文本菜单等。
+- **InputConnection**: EditText的文本输入部分是在TextView中完成的。而InputConnection是软键盘和TextView之间的桥梁，所有的软键盘的输入文字、修改文字和删除文字都是通过InputConnection传递给TextView的。
 
 ## 3.TextView的onTouchEvent处理
 
@@ -358,7 +358,6 @@ measured.setPara(source, paraStart, paraEnd, textDir, b);
             byte[] chdirs = measured.mLevels;
             int dir = measured.mDir;
             boolean easy = measured.mEasy;
-
 ```
 
             //把相关属性传给JNI层的LineBreaker
@@ -696,8 +695,6 @@ public void drawText(Canvas canvas, int firstLine, int lastLine) {
     }
 ```
 
-
-
 我们下面再来看看TextLine是如何绘制有特殊情况的文本的
 
 ```java
@@ -785,8 +782,6 @@ void draw(Canvas c, float x, int top, int y, int bottom) {
  ![1339061786_4121](https://raw.githubusercontent.com/7heaven/AndroidSdkSourceAnalysis/master/article/images/fontmetrics.gif)
 
 除了leading以外，其他的数值都是相对于每一行的baseline的，也就是说其他的数值需要加上对应行的baseline才能得到最终真实的坐标。
-
-
 
 ## 6.TextView接收软键盘输入
 
@@ -948,8 +943,6 @@ public boolean deleteSurroundingText(int beforeLength, int afterLength) {
         return true;
     }
 ```
-
-
 
 commitCompletion和commitCorrection方法，即是用来补全单词和修正错别字的方法，这两个方法内部都是调用TextView对应的方法来实现的。
 

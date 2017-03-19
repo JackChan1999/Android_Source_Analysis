@@ -1,14 +1,11 @@
-
-
-ScrollView 源码解析
-==
+## ScrollView 源码解析
 
 > 本文分析版本: **Android API 23**
 
-### 1.简介
+### 1. 简介
 `ScrollView`是我们在开发中经常使用的控件。当我们需要展示的内容比较多但并不是重复的`item`时，我们就会使用`ScrollView`使内容可以在垂直方向滚动显示防止显示不全。`ScrollView`使用起来非常简单，大多数情况下你甚至都不用写一行`Java`代码就能使用`ScrollView`了。但是要注意的是`ScrollView`中只能添加一个子`View`。今天我们就来看看`ScrollView`到底是如何实现的。以及最后会教大家一行代码实现类似`IOS`上的弹性`ScrollView`。
 
-### 2.源码分析
+### 2. 源码分析
 
 #### 2.1 继承关系
 
@@ -27,6 +24,7 @@ private VelocityTracker mVelocityTracker;
 
 ```
 #### 2.3 构造方法
+
 `ScrollView`的构造方法如下：
 
 ```java
@@ -78,6 +76,7 @@ public void setFillViewport(boolean fillViewport) {
 
 #### 2.4 Measure、Layout与Draw
 ##### 2.4.1 onMeasure方法的实现
+
 ```java
 @Override
 protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -188,6 +187,7 @@ public void draw(Canvas canvas) {
 依然是调用了父类的`draw`方法。之后则是根据是否需要绘制边缘阴影来绘制阴影。`ScrollView`的边缘阴影就是在这里绘制的。值得一提的是包括`ListView`以及`RecycleView`的边缘阴影都是用这种方法来绘制的。以上就是`ScrollView`的整个绘制流程。可以看出都是调用了父类的对应方法。自身只处理了一些与`ScrollView`相关的属性。分析完绘制流程我们就来看看`ScrollView`中的触摸事件处理机制，来看看`ScrollView`中的滑动滚动到底是如何做到的：
 
 #### 2.5 触摸事件处理
+
 说到触摸事件的分发与消费机制这算是一个比较基础的知识。但是要是完全掌握也并不是那么容易的，这里推荐一篇文章[Android：View的事件分发与消费机制](http://www.jianshu.com/p/1528eb2ee54b)。对事件处理机制还不了解的同学可以先看看这边文章。`ScrollView`因为是继承自`ViewGroup`的，所以触摸事件会依次调用`dispatchTouchEvent()` -> `onInterceptTouchEvent()` 若返回`true`-> `onTouchEvent()`处理触摸事件。`ScrollView`并没有重写`dispatchTouchEvent()`方法，所以我们从`onInterceptTouchEvent()`方法来看。
 
 ##### 2.5.1 onInterceptTouchEvent方法的实现
@@ -307,12 +307,13 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
 
 在看`onTouchEvent()`的实现之前，我们知道在`ScrollView`中手指无论怎么移动，只会有垂直方向上的滑动发生。而触摸事件的大致流程是：
 
-        ACTION_DOWN -> ACTION_MOVE -> ... -> ACTION_MOVE -> ACTION_UP
+ACTION_DOWN -> ACTION_MOVE -> ... -> ACTION_MOVE -> ACTION_UP
 
 我们根据事件的类型分别来分析：
 
 - ACTION_DOWN:
-  `ACTION_DOWN`代表手指按下时第一个发生的事件，在`onTouchEvent()`中实现如下：
+
+`ACTION_DOWN`代表手指按下时第一个发生的事件，在`onTouchEvent()`中实现如下：
 
 ```java
 
@@ -375,7 +376,8 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
 在处理各种事件之前，首先初始化了`VelocityTracker`。并且复制一个新的`MotionEvent`对象用于计算加速度。接着开始处理`ACTION_DOWN`：首先是给`mIsBeingDragged`赋值，接着检查是否在`fling`动画执行过程中，如果正在执行则停止，这也是为什么我们在`ScrollView`滑动过程中手指触摸时会终止`ScrollView`的滑动。最后记录了`mLastMotionY`与`mActivePointerId`。
 
 - ACTION_MOVE:
-  当手指移动时，会产生`ACTION_MOVE`事件：
+
+当手指移动时，会产生`ACTION_MOVE`事件：
 
 ```java
 
@@ -546,7 +548,8 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
 首先是有一句注释是说：不同的对待滑动动画，查看`computeScroll()`方法看原因。说到滑动动画一定是和`Scroller`相关了，目前我们还没涉及到，下面我们再谈。回到这里看到根据`!mScroller.isFinished()`来判断，根据前面的判断得知，要么是滑动动画并不存在，要么就已经被终止，所以在这里`!mScroller.isFinished()`为`false`。所以会调用`super.scrollTo(scrollX, scrollY);`最终产生滑动。到这里手指触摸产生的滑动就分析完了。
 
 - ACTION_UP:
-  `ACTION_UP`是当我们手指离开时产生的事件，在`ScrollView`中当我们手指离开时，会根据当前的加速度再滑动一段距离。具体的实现我们来看看是如何实现的：
+
+`ACTION_UP`是当我们手指离开时产生的事件，在`ScrollView`中当我们手指离开时，会根据当前的加速度再滑动一段距离。具体的实现我们来看看是如何实现的：
 
 ```java
 
@@ -581,6 +584,7 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
     }
 
 ```
+
 可以看到代码并不复杂，在计算了加速度后，调用了`flingWithNestedDispatch(-initialVelocity);`：
 ​    
 ```java
@@ -661,6 +665,7 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
 
 ```
 我省略了一些注释，意思是说：`computeScroll()`会在绘制的过程中调用，为了不重复的显示滚动条。这里重复做了`scrollTo()`方法中的代码。但并没有调用`scrollTo()`，因为`scrollTo()`中也有滚动条相关的处理。所以`computeScroll()`中也调用了`overScrollBy()`方法处理滑动。所以最终仍然会调用`onOverScrolled()`方法：
+
 ```java
     @Override
     protected void onOverScrolled(int scrollX, int scrollY,
@@ -707,6 +712,7 @@ public boolean onInterceptTouchEvent(MotionEvent ev) {
     }
 ```
 `ACTION_POINTER_DOWN`是指有另外一个手指发生了触摸。这里的处理是将`mActivePointerId`赋值给新的点了。所以在`ScrollView`中当有一个手指按下，我们再按下另一个手指时，第二个按下的手指能决定`ScrollView`的滑动。
+
 - ACTION_POINTER_UP:
 
 ```java

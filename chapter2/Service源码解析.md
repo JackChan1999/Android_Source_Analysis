@@ -1,35 +1,36 @@
-#Service源码解析
----
+## Service源码解析
 
+## 1. 理解Service
 
-##理解Service
+Service是Android四大组件之一。在一般的App开发场景中，它的存在往往是为了保证App切换到后台后，仍然具备处理数据的能力。Service实现了一套异步的跨进程通信模型，通过`Binder`机制，Service可以优雅的屏蔽跨进程调用的复杂性。一般来说，一个普通的Service运行在*当前进程的主线程中*，也就是说，如果不开辟线程，把耗时的操作直接甩在Service，那么系统就会赏你一个`ANR`（application Not Responding）警告。当然，为了方便做耗时操作，SDK层也提供了`IntentService`，它开辟了一个Work Thread来顺序处理耗时请求，从而避免了阻塞主进程。
 
-  Service是Android四大组件之一。在一般的App开发场景中，它的存在往往是为了保证App切换到后台后，仍然具备处理数据的能力。Service实现了一套异步的跨进程通信模型，通过`Binder`机制，Service可以优雅的屏蔽跨进程调用的复杂性。一般来说，一个普通的Service运行在*当前进程的主线程中*，也就是说，如果不开辟线程，把耗时的操作直接甩在Service，那么系统就会赏你一个`ANR`（application Not Responding）警告。当然，为了方便做耗时操作，SDK层也提供了`IntentService`，它开辟了一个Work Thread来顺序处理耗时请求，从而避免了阻塞主进程。
+## 2. Service的本质
 
-##Service的本质
+Service家族的体系如图所示：
 
-  Service家族的体系如图所示：
+![](Service.jpg)
 
-   ![](Service.jpg)
+`Service`是`Context`的子类，因此具备了`资源访问`和`组件调用`的能力，除此之外，它还具有独立的`生命周期`。
 
-   `Service`是`Context`的子类，因此具备了`资源访问`和`组件调用`的能力，除此之外，它还具有独立的`生命周期`。
+按**运行环境**分类，Service可分为：
 
-   按**运行环境**分类，Service可分为：
 * 前台Service
-   * 后台Service
+* 后台Service
 
-  ####前台Service：
-  通过调用 **Service.startForeground(int id, Notification notification)** 可以使一个后台Service成为前台Service，并与一个Notification`绑定`，显示在通知栏。前台Service与后台Service相比，它所在的进程具有更高的`优先级`，在内存不足时更不容易被系统Kill。
+####2.1 前台Service
 
-  ####后台Service：
-  后台Service是指当前没有显示任何界面的Service，处于非前台的Service皆为后台Service，后台Service的优先级低于前台Service，因此在低内存的时候，系统会优先杀掉后台Service。
+通过调用 **Service.startForeground(int id, Notification notification)** 可以使一个后台Service成为前台Service，并与一个Notification`绑定`，显示在通知栏。前台Service与后台Service相比，它所在的进程具有更高的`优先级`，在内存不足时更不容易被系统Kill。
 
-   Service的本身只是一个`空壳`，它是由系统来维护和管理的。因此想要弄清楚Service的工作原理，就得分析它的启动流程。
+####2.2 后台Service
 
- ##Service启动流程分析
- Service在`客户端`的启动入口位于 `ContextImpl.startService(Intent intent)`，因此我们从它入手。
+后台Service是指当前没有显示任何界面的Service，处于非前台的Service皆为后台Service，后台Service的优先级低于前台Service，因此在低内存的时候，系统会优先杀掉后台Service。
 
- **[--> android/app/ContextImpl.java]**
+Service的本身只是一个`空壳`，它是由系统来维护和管理的。因此想要弄清楚Service的工作原理，就得分析它的启动流程。
+
+##3. Service启动流程分析
+
+Service在`客户端`的启动入口位于 `ContextImpl.startService(Intent intent)`，因此我们从它入手。
+
  ```java
      public ComponentName startService(Intent service) {
         //如果当前进程是system-server进程，
@@ -73,7 +74,6 @@
  ```
  `startServiceCommon` 首先验证启动目标Service的Intent的合法性，然后调用 `ActivityManagerNative.startService(...)` 来启动Service，最后做了收尾工作。我们接着来到 `ActivityManagerNative` 一探究竟：
 
- **[-->android/app/ActivityManagerNative.java]**
  ```java
   public ComponentName startService(IApplicationThread caller, Intent service,
             String resolvedType, int userId) throws RemoteException
@@ -105,7 +105,6 @@
  ```
  显然，这个`mRemote`是通过`ServiceManager`来维护的，它对应的是**ActivityManagerService**。`ActivityManagerService`运行在`system-server`进程，它实际上是一个`进程级别`的单例。我们接着分析`startService`在服务端的实现:
 
- **[-->com/android/server/am/ActivityManagerService.java]**
  ```java
      public ComponentName startService(IApplicationThread caller, Intent service,
             String resolvedType, int userId) {
@@ -131,7 +130,6 @@
 
  `ActiveServices`的作用显而易见了，它负责处理`Service的组件调用`和`维护Service的状态信息`。那么`startServiceLocked`做了哪些事情呢？我们来看代码：
 
- **[-->com/android/server/am/ActiveServices.java]**
  ```java
      ComponentName startServiceLocked(IApplicationThread caller,
             Intent service, String resolvedType,
@@ -166,9 +164,9 @@
             return new ComponentName("!", res.permission != null
                     ? res.permission : "private to package");
         }
-        
+
         ServiceRecord r = res.record;
-        
+
         if (!mAm.getUserManagerLocked().exists(r.userId)) {
             //目标Service组件不存在于任何User
             Slog.d(TAG, "Trying to start service with non-existent user! " + r.userId);
@@ -177,7 +175,7 @@
         //Uri权限检查
         NeededUriGrants neededGrants = mAm.checkGrantUriPermissionFromIntentLocked(
                 callingUid, r.packageName, service, service.getFlags(), null, r.userId);
-        
+
         //如果目标的Service正在被请求重启，但还未重启，取消这个请求
         if (unscheduleServiceRestartLocked(r, callingUid, false)) {
             if (DEBUG_SERVICE) Slog.v(TAG, "START SERVICE WHILE RESTART PENDING: " + r);
@@ -191,9 +189,9 @@
         boolean addToStarting = false;
         if (!callerFg && r.app == null && mAm.mStartedUsers.get(r.userId) != null) {
             ProcessRecord proc = mAm.getProcessRecordLocked(r.processName, r.appInfo.uid, false);
-            
+
             if (proc == null || proc.curProcState > ActivityManager.PROCESS_STATE_RECEIVER) {
-            
+
                 if (r.delayed) {
                     // 目标Service正在启动中，但还没有启动完成。
                     return r.name;
@@ -208,12 +206,13 @@
                 addToStarting = true;
             } else if (proc.curProcState >= ActivityManager.PROCESS_STATE_SERVICE) {
                 addToStarting = true;
-            } 
-        } 
+            }
+        }
         return startServiceInnerLocked(smap, service, r, callerFg, addToStarting);
     }
  ```
- 这里解释一下`startServiceLocked`的工作流程。
+ 这里解释一下`startServiceLocked`的工作流程
+
 * 检查了调用者的身份，以防止`匿名组件攻击`。
 * 根据客户端传入的数据`检索`匹配的Service组件信息。
 * 如果检索成功，进一步检查客户端是否有权限调起目标Service。对于在`AndroidManifest.xml`将 `android:export标签`设为 **false**的 `Service`，只有调用者与目标Service包名相同并且uid相同时才允许调起。
@@ -302,7 +301,7 @@ private final String bringUpServiceLocked(ServiceRecord r,
             Slog.w(TAG, "Failed trying to unstop package "
                     + r.packageName + ": " + e);
         }
-        
+
         //检查要启动的Service是否被隔离
         final boolean isolated = (r.serviceInfo.flags&ServiceInfo.FLAG_ISOLATED_PROCESS) != 0;
         final String procName = r.processName;
@@ -359,6 +358,7 @@ private final String bringUpServiceLocked(ServiceRecord r,
     }
 ```
 这个函数又依次做了以下事情：
+
 * 如果目标Service已经启动，直接`sendServiceArgsLocked(...)`并返回。
 * 如果目标Service正在被重启，但未重启完成，直接返回。
 * 从`正在重启的Service列表`中移除目标Service。
@@ -439,7 +439,6 @@ private final String bringUpServiceLocked(ServiceRecord r,
 ```
 代码比较简单，服务端首先填充ServiceRecord中关于目标Service的数据，一切无误后远程调用客户端的 `scheduleCreateService` 函数来创建目标Service。`scheduleCreateService` 函数位于 `android.app.IApplicationThread`接口。那么，它又是何物呢？我们来看看这个接口：
 
-**[-->androiod/app/IApplicationThread.java]**
 ```java
 /**
  * System private API for communicating with the application.  This is given to
@@ -452,11 +451,10 @@ public interface IApplicationThread extends IInterface {
 ```
 看注释就很清楚了，它是服务端与客户端通信的桥梁，每一个客户端进程都对应一个`IApplicationThread`，它的实例会在进程创建后传递到服务端，方便服务端与客户端通信。`IApplicationThread`接口的部分实现在 `android.app.ApplicationThreadNative`，它仍然是一个`抽象类`，但是实现了大部分接口中的方法：
 
-**[-->androiod/app/ApplicationThreadNative.java]**
 ```java
 public abstract class ApplicationThreadNative extends Binder
         implements IApplicationThread {
-        
+
        static public IApplicationThread asInterface(IBinder obj) {
         if (obj == null) {
             return null;
@@ -473,13 +471,11 @@ public abstract class ApplicationThreadNative extends Binder
 ```
 真正完整的是`ApplicationThread`。它继承了 `ApplicationThreadNative` ，并实现了所有的抽象方法。它是 `android.app.ActivityThread` 的内部类：
 
-**[-->androiod/app/ActivityThread.java]**
-
 ```java
     public final class ActivityThread {
-        
+
         private class ApplicationThread extends ApplicationThreadNative {
-        
+
             public final void scheduleCreateService(IBinder token,
                 ServiceInfo info, CompatibilityInfo compatInfo, int processState) {
                 //...
@@ -493,7 +489,6 @@ public abstract class ApplicationThreadNative extends Binder
 它的家族体系如图所示：
 
 ![](ApplicationThread.jpg)
-
 
 由前面的分析可知，远程服务端最终会调用 `ApplicationThread。scheduleCreateService`，那么我们来看看`scheduleCreateService`是怎样实现的：
 
@@ -574,7 +569,7 @@ private class H extends Handler {
             //将创建完成的Service放入mServices这个Map中
             mServices.put(data.token, service);
             try {
-               //通知服务端，Service启动完成。 
+               //通知服务端，Service启动完成。
                ActivityManagerNative.getDefault().serviceDoneExecuting(
                         data.token, SERVICE_DONE_EXECUTING_ANON, 0, 0);
             } catch (RemoteException e) {
@@ -586,15 +581,16 @@ private class H extends Handler {
     }
   ```
   代码十分清晰，这个函数做了以下事情：
-* 根据`ServiceInfo`中的`ApplicationInfo`取得App对应的LoadedApk。
-  * 通过`LoadedApk`拿到`ClassLoader`来反射创建目标Service实例。
-  * 通过`ContextImpl.createAppContext(...)`来创建base context。前面分析过，Service继承自**ContextWrapper**，它的`attachBaseContext`方法传入的就是这里的`context`。
-  * 填充信息到Service，这样Service才能知道自己的身份。
-  * 调用`Service.onCreate`方法。
-  * 将创建完成的Service放入`mServices`这个 Map 中。
-  * 通知服务端，Service启动完成。如果前面的过程耗时太长，服务端会认为客户端的Service启动失败。
 
-##总结
+* 根据`ServiceInfo`中的`ApplicationInfo`取得App对应的LoadedApk。
+* 通过`LoadedApk`拿到`ClassLoader`来反射创建目标Service实例。
+* 通过`ContextImpl.createAppContext(...)`来创建base context。前面分析过，Service继承自**ContextWrapper**，它的`attachBaseContext`方法传入的就是这里的`context`。
+* 填充信息到Service，这样Service才能知道自己的身份。
+* 调用`Service.onCreate`方法。
+* 将创建完成的Service放入`mServices`这个 Map 中。
+* 通知服务端，Service启动完成。如果前面的过程耗时太长，服务端会认为客户端的Service启动失败。
+
+## 4. 总结
 还记得这句话吗？
 > Read the fucking source code !!!
 

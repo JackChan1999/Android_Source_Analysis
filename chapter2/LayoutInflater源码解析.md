@@ -1,24 +1,24 @@
-# LayoutInflater&LayoutInflaterCompat源码解析
+# LayoutInflater源码解析
 > 本文分析版本: Android API 23，v4基于 23.2.1
 
-## 1 简介
-> 实例化布局的XML文件成相应的View对象。它不能被直接使用，应该使用`getLayoutInflater（）`或`getSystemService（Class）`来获取已关联了当前`Context`并为你正在运行的设备正确配置的标准LayoutInflater实例对象。 例如：
+## 1. 简介
+实例化布局的XML文件成相应的View对象。它不能被直接使用，应该使用`getLayoutInflater（）`或`getSystemService（Class）`来获取已关联了当前`Context`并为你正在运行的设备正确配置的标准LayoutInflater实例对象。 例如：
 
-> `LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);`
+`LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);`
 
-> 为了创建一个对于你自己的View来说，附加了`LayoutInflater.Factory`的`LayoutInflater`，你需要使用`cloneInContext(Context)`来克隆一个已经存在`LayoutInflater`，然后调用`setFactory(LayoutInflater.Factory)`来替换成你自己的Factory。
+为了创建一个对于你自己的View来说，附加了`LayoutInflater.Factory`的`LayoutInflater`，你需要使用`cloneInContext(Context)`来克隆一个已经存在`LayoutInflater`，然后调用`setFactory(LayoutInflater.Factory)`来替换成你自己的Factory。
 
->由于性能原因，View的实例化很大程度上依赖对于xml文件在编译时候的预处理。因此，目前使用`LayoutInflater`不能使用直接通过原始xml文件获取的`XmlPullParser`，只能使用一个已编译的xml资源返回的`XmlPullParser`（(R.something file.）。
+由于性能原因，View的实例化很大程度上依赖对于xml文件在编译时候的预处理。因此，目前使用`LayoutInflater`不能使用直接通过原始xml文件获取的`XmlPullParser`，只能使用一个已编译的xml资源返回的`XmlPullParser`（(R.something file.）。
 
-## 2 获取LayoutInflater的三种方式：
+## 2. 获取LayoutInflater的三种方式：
 
-1. `LayoutInflater inflater = getLayoutInflater(); `//调用Activity的getLayoutInflater()
-2. `LayoutInflater inflater = LayoutInflater.from(context);`
-3. `LayoutInflater inflater =  (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE); `
+- `LayoutInflater inflater = getLayoutInflater(); `//调用Activity的getLayoutInflater()
+- `LayoutInflater inflater = LayoutInflater.from(context);`
+- `LayoutInflater inflater =  (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE); `
 
 但是，这三种方式本质上还是一样的：
 
-1.`getLayoutInflater()`调用的还是Activity中的方法：
+- `getLayoutInflater()`调用的还是Activity中的方法：
 
 ```java
     public LayoutInflater getLayoutInflater() {
@@ -27,8 +27,7 @@
 ```
 其中`Window`是一个抽象类，它 **唯一** 实现类是`PhoneWindow`。
 
-_com/android/internal/policyPhoneWindow.java_
-​    
+com/android/internal/policyPhoneWindow.java
 ```java
 	public PhoneWindow(Context context) {
     	super(context);
@@ -47,10 +46,10 @@ _com/android/internal/policyPhoneWindow.java_
 ```
 
 可以看到，通过·`Activity`的`getLayoutInflater()`最终调用的还是第二种方法。
-​	
+​
 2.通过 `LayoutInflater.from(context);` 获取`LayoutInflater`对象。
-​	
-_android/view/LayoutInflater.java_
+​
+android/view/LayoutInflater.java
 
 ```java
 	/**
@@ -71,48 +70,60 @@ _android/view/LayoutInflater.java_
 
 最终：不管以什么样的方式获取到LayoutInflater对象，最终都是[通过系统服务来获取实例对象](http://blog.csdn.net/chunqiuwei/article/details/50495686)。
 
-## 3 主要方法预览
+## 3. 主要方法预览
+
 *  `public static LayoutInflater from(Context context);`
- > 获取LayoutInflater实例化对象。
+
+获取LayoutInflater实例化对象。
 
 * `public void setFactory(Factory factory);`
- > 设置使用当前LayoutInflater创建View的自定义实例化工厂。通过设置自定义工厂，可以在系统实例化View的时候进行一些拦截操作，比如可以把本来的TextView拦截成Button、给TextView统一指定字体等。
+
+设置使用当前LayoutInflater创建View的自定义实例化工厂。通过设置自定义工厂，可以在系统实例化View的时候进行一些拦截操作，比如可以把本来的TextView拦截成Button、给TextView统一指定字体等。
 
 * `public void setFactory2(Factory2 factory);`
- > 同上，区别是工厂2多了对实例化View的时候Parent的支持。在API 11引入。
+
+同上，区别是工厂2多了对实例化View的时候Parent的支持。在API 11引入。
 
 * `public void setFilter(Filter filter);`
- > 给当前LayoutInflater设置过滤器，如果要被填充的View不被这个过滤器允许，则会抛出InflateException。这个过滤器会覆盖当前LayoutInflater之上的任何之前设置过的过滤器。
+
+给当前LayoutInflater设置过滤器，如果要被填充的View不被这个过滤器允许，则会抛出InflateException。这个过滤器会覆盖当前LayoutInflater之上的任何之前设置过的过滤器。
 
 * `public View inflate(@LayoutRes int resource, @Nullable ViewGroup root);`
  > 把指定的布局资源填充成View。如果root不为空则把填充的View添加到root上，如果root为空则不添加。
 
 * `public View inflate(XmlPullParser parser, @Nullable ViewGroup root);`
- > 通过布局xml资源的解析器把布局资源填充成View。如果root不为空则把填充的View添加到root上，如果root为空则不添加。
+
+通过布局xml资源的解析器把布局资源填充成View。如果root不为空则把填充的View添加到root上，如果root为空则不添加。
 
 * `public View inflate(@LayoutRes int resource, @Nullable ViewGroup root, boolean attachToRoot);`
- > 把指定的布局资源填充成View。如果root不为空并且attachToRoot为true，则把填充的View添加到root上，否则不添加。
+
+把指定的布局资源填充成View。如果root不为空并且attachToRoot为true，则把填充的View添加到root上，否则不添加。
 
 * `public View inflate(XmlPullParser parser, @Nullable ViewGroup root, boolean attachToRoot);`
- > 通过布局xml资源的解析器把布局资源填充成View。如果root不为空并且attachToRoot为true，则把填充的View添加到root上，否则不添加。
+
+通过布局xml资源的解析器把布局资源填充成View。如果root不为空并且attachToRoot为true，则把填充的View添加到root上，否则不添加。
 
 * `public final View createView(String name, String prefix, AttributeSet attrs);`
- > 通过View的名称，前缀和attrs属性实例化View。
+
+通过View的名称，前缀和attrs属性实例化View。
 
 * `protected View onCreateView(String name, AttributeSet attrs);`
- > 通过View的父View，View名称和attrs属性实例化View（最终调用的是`createView(String name, String prefix, AttributeSet attrs);`）。
+
+通过View的父View，View名称和attrs属性实例化View（最终调用的是`createView(String name, String prefix, AttributeSet attrs);`）。
 
 * `protected View onCreateView(View parent, String name, AttributeSet attrs);`
- >  通过View的父View，View名称、前缀和attrs属性实例化View（最终调用的是`createView(String name, String prefix, AttributeSet attrs);`）。
+
+通过View的父View，View名称、前缀和attrs属性实例化View（最终调用的是`createView(String name, String prefix, AttributeSet attrs);`）。
 
 * `View createViewFromTag(View parent, String name,Context context, AttributeSet attrs);`
- > 通过View的父View，View的名称、attrs属性实例化View（内部调用`onCreateView()`和`createView()`）。
+
+通过View的父View，View的名称、attrs属性实例化View（内部调用`onCreateView()`和`createView()`）。
 
 * `void rInflate(XmlPullParser parser, View parent, Context context, final AttributeSet attrs, boolean finishInflate);`
- > 解析Parent的子View并添加到Parent上（递归调用）。
 
+解析Parent的子View并添加到Parent上（递归调用）。
 
-## 4 流程预览
+## 4. 流程预览
 
 ```java
 // 把xml布局资源或者通过资源解析器实例化View
@@ -126,7 +137,7 @@ inflate{
 		createViewFromTag();
 		// 递归实例化跟节点的子View
 		rInflateChildren()
-		
+
 		// 这个需要注意
 		if(父View是空或者不把填充的View添加到父View){
 			返回根节点View
@@ -156,32 +167,32 @@ rInflate{
 }
 ```
 
-__注意__ ，在调用`inflate`方法的时候，传入的参数不一样，返回的View可是有区别的，总结起来就是：
-​	
+注意：在调用`inflate`方法的时候，传入的参数不一样，返回的View可是有区别的，总结起来就是：
+​
 1. 传入的父View为空或者不添加到父View上，则返回根节点的View。
 2. 其他（也就是根节点是merge、父View不为空且添加到父View上，返回的是父View）。
 
-## 5 流程详情
+## 5. 流程详情
 
 关键字段：
 
-```java	
+```java
 /************************字段定义区**********************/
 // 反射调用构造方法的两个参数
 final Object[] mConstructorArgs = new Object[2];
 // 反射构造方法的参数类型
 static final Class<?>[] mConstructorSignature = new Class[] {
-        Context.class, AttributeSet.class};	
+        Context.class, AttributeSet.class};
 protected final Context mContext;
 ```
 
-__注：以下我们用 “当前View”来指代该操作的View，用“父View”指代“当前View”的父View。__
+PS：以下我们用 “当前View”来指代该操作的View，用“父View”指代“当前View”的父View。__
 
 ### 5.1 inflate方法解析
 
-__inflate__ 方法主要是把布局资源实例化成View并返回。
+inflate方法主要是把布局资源实例化成View并返回。
 
-通过 __获取LayoutInflater的三种方式__ 我们知道，通过布局文件填充成View对象最终调用的是下面两个方法：
+通过获取LayoutInflater的三种方式，我们知道，通过布局文件填充成View对象最终调用的是下面两个方法：
 
 ```java
 public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
@@ -193,7 +204,7 @@ public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
     } finally {
         parser.close();
     }
-} 
+}
 ```
 
 最终调用的是此方法：
@@ -226,10 +237,10 @@ public View inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot) 
                 throw new InflateException(parser.getPositionDescription()
                         + ": No start tag found!");
             }
-			
+
 			//获取控件的名称
             final String name = parser.getName();
-            
+
             if (DEBUG) {
                 System.out.println("**************************");
                 System.out.println("Creating root view: "
@@ -250,9 +261,9 @@ public View inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot) 
             } else {
 				// temp是当前xml的根节点的View。通过父View、View名、Context、属性，来实例化View。也即实例化根节点的View。
                 final View temp = createViewFromTag(root, name, inflaterContext, attrs);
-				
+
                 ViewGroup.LayoutParams params = null;
-				
+
 				// 如果传入Parent不为空
                 if (root != null) {
                     if (DEBUG) {
@@ -317,13 +328,12 @@ public View inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot) 
 ```
 
 ### 5.2 createViewFromTag方法解析
-__createViewFromTag__ 方法主要通过要实例化View的父View、要实例化View的名称、Context上下文、属性值来实例化View。该方法主要做的操作有：
+createViewFromTag方法主要通过要实例化View的父View、要实例化View的名称、Context上下文、属性值来实例化View。该方法主要做的操作有：
 
 1. 先尝试用用户设置的Factory以及自己私有的Factory来实例化View。
 2. 如果这几个Factory都没有实例化View，则调用`onCreateView`或者`createView`来实例化View。
 
 代码分析：
-​	
 ```java
 /*
  * 缺省方法可见性，好让BridgeInflater能重写它。
@@ -353,7 +363,7 @@ View createViewFromTag(View parent, String name, Context context, AttributeSet a
         }
         ta.recycle();
     }
-	
+
 	// 如果根标签是“1995”，则创建一个“BlinkLayout”（其实就是一个FrameLayout）
 	// ps：这个没见过在哪里用到过。
     if (name.equals(TAG_1995)) {
@@ -419,9 +429,9 @@ View createViewFromTag(View parent, String name, Context context, AttributeSet a
 
 ### 5.3 onCreateView和createView方法解析
 
-__onCreateView__ 有两个重载方法，最终调用的是`createView(String name, String prefix, AttributeSet attrs)`。
+onCreateView有两个重载方法，最终调用的是`createView(String name, String prefix, AttributeSet attrs)`。
 
-__createView__ 主要做的操作有：
+createView主要做的操作有：
 
 1. 先通过Filter，看是否过滤。
 2. 利用反射实例化View对象。
@@ -542,9 +552,9 @@ rInflate方法主要是遍历传入的Parent的子节点，实例化Parent的所
 
 这里面主要的操作有：
 
-* parseRequestFocus()，处理请求焦点。
-* parseInclude()，处理include标签。
-* 实例化1995或一般View并添加到当前View的父View上。
+* parseRequestFocus()，处理请求焦点
+* parseInclude()，处理include标签
+* 实例化1995或一般View并添加到当前View的父View上
 
 源码分析：
 
@@ -653,14 +663,14 @@ private void parseInclude(XmlPullParser parser, Context context, View parent,
         if (layout != 0 && context.getTheme().resolveAttribute(layout, mTempValue, true)) {
             layout = mTempValue.resourceId;
         }
-		
+
 		// 如果还是无法找到布局id，抛出异常。
         if (layout == 0) {
             final String value = attrs.getAttributeValue(null, ATTR_LAYOUT);
             throw new InflateException("You must specify a valid layout "
                     + "reference. The layout ID " + value + " is not valid.");
         } else {
-			
+
 			// 获取include标签中布局的解析器
             final XmlResourceParser childParser = context.getResources().getLayout(layout);
 
@@ -676,7 +686,7 @@ private void parseInclude(XmlPullParser parser, Context context, View parent,
                     throw new InflateException(childParser.getPositionDescription() +
                             ": No start tag found!");
                 }
-				
+
 				// 获取标签名
                 final String childName = childParser.getName();
 				// 实例化merge标签
@@ -695,7 +705,7 @@ private void parseInclude(XmlPullParser parser, Context context, View parent,
                     final int id = a.getResourceId(R.styleable.Include_id, View.NO_ID);
                     final int visibility = a.getInt(R.styleable.Include_visibility, -1);
                     a.recycle();
-					
+
 					// 尝试加载<include />标签中的布局参数，如果父View无法生成布局参数（比如include标签下没有宽高参数是要抛出运行时异常的）
 					// 捕获运行时异常，然后用引用的Layout的attrs来创建布局参数
                     ViewGroup.LayoutParams params = null;
@@ -744,7 +754,7 @@ private void parseInclude(XmlPullParser parser, Context context, View parent,
 }
 ```
 
-## 6 LayoutInflaterCompat
+## 6. LayoutInflaterCompat
 LayoutInflater我们用的很多，一般都是用来把布局填充成View，它里面有两个方法：
 
 ```java
@@ -762,16 +772,16 @@ public interface Factory {
      * Hook you can supply that is called when inflating from a LayoutInflater.
      * You can use this to customize the tag names available in your XML
      * layout files.
-     * 
+     *
      * <p>
      * Note that it is good practice to prefix these custom names with your
      * package (i.e., com.coolcompany.apps) to avoid conflicts with system
      * names.
-     * 
+     *
      * @param name Tag name to be inflated.
      * @param context The context the view is being created in.
      * @param attrs Inflation attributes as specified in XML file.
-     * 
+     *
      * @return View Newly created view. Return null for the default
      *         behavior.
      */
@@ -798,11 +808,11 @@ public interface Factory2 extends Factory {
 ```
 
 通过上述接口可以看出来，新的`setFactory2(Factory2 factory)`比老的`setFactory(Factory factory)`在构建View的时候多传入了一个Parent View。如果你想用`setFactory2(Factory factory)`需要实现带Parent View和不带Parent View的两个方法，比较复杂，所以v4包中的LayoutInflaterCompat就为我们提供了兼容性处理，先看用法：
-​	
+
 ```java    
 LayoutInflater layoutInflater = getLayoutInflater();
 LayoutInflaterCompat.setFactory(layoutInflater, new LayoutInflaterFactory() {
-		
+
 		@Override
 		public View onCreateView(View parent, String name, Context context,
 				AttributeSet attrs) {
@@ -816,8 +826,7 @@ LayoutInflaterCompat.setFactory(layoutInflater, new LayoutInflaterFactory() {
 	});
 ```
 
-举个例子：
-现在我们用AS开发，一般默认是继承`AppCompatActivity`，在初始化的时候：
+举个例子：现在我们用AS开发，一般默认是继承`AppCompatActivity`，在初始化的时候：
 
 ```java
 @Override
@@ -875,9 +884,9 @@ public static void setFactory(LayoutInflater inflater, LayoutInflaterFactory fac
 
 IMPL是LayoutInflaterCompat中内部接口LayoutInflaterCompatImpl的实现类。这个接口有三个实现类：
 
-1. LayoutInflaterCompatImplBase。
-2. LayoutInflaterCompatImplV11。
-3. LayoutInflaterCompatImplV21。
+- LayoutInflaterCompatImplBase
+- LayoutInflaterCompatImplV11
+- LayoutInflaterCompatImplV21
 
 ```java
 static final LayoutInflaterCompatImpl IMPL;
@@ -1037,7 +1046,7 @@ static {
 }
 ```
 
-## 7 参考资料
+## 7. 参考资料
 
 [Android 源码解析 之 setContentView](http://blog.csdn.net/lmj623565791/article/details/41894125)
 

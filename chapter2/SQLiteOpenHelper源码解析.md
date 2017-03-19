@@ -1,18 +1,18 @@
-#SQLiteOpenHelper/SQLiteDatabase/Cursor源码解析
+## SQLite源码解析
 
-##SQLiteOpenHelper
+## 1. SQLiteOpenHelper
 ——封装管理数据库的创造和版本管理类
 
 主要封装了数据库的创建和获取的方法，一般继承该类实现onCreate()、onUpdate()方法，在onCreate创建数据库，在onUpdate进行数据库升级操作。其中还有onConfigure()、onDowngrade()、onOpen()方法，将会在下面获取数据库对象分析进行解析
 
 - 数据库的获取：
-  两个方法：getReadableDatabase()、getWritableDatabase()。需要注意的一点是这两个方法都加锁，是线程安全的。这两个方法最终调用getDatabaseLocked(boolean writable)：
 
+两个方法：getReadableDatabase()、getWritableDatabase()。需要注意的一点是这两个方法都加锁，是线程安全的。这两个方法最终调用getDatabaseLocked(boolean writable)：
 
 ```java
 private SQLiteDatabase getDatabaseLocked(boolean writable) {
     if (mDatabase != null) {
-        
+
         if (!mDatabase.isOpen()) {  // 判断数据库是否已经关闭
             // Darn!  The user closed the database by calling mDatabase.close().
             mDatabase = null;
@@ -109,19 +109,23 @@ private SQLiteDatabase getDatabaseLocked(boolean writable) {
 }
 ```
 
-####onCreate()、onUpdate()、onConfigure()、onDowngrade()、onOpen()方法的调用规则：
+#### onCreate()、onUpdate()、onConfigure()、onDowngrade()、onOpen()方法的调用规则：
 
 - onConfigure()：
-   当第一次调用getReadableDatabase()或者getWritableDatabase()会调用onConfigure()，如果第一是获取到只读形式的数据库，当转换成可写形式数据库时会再次调用onConfigure()。
+
+当第一次调用getReadableDatabase()或者getWritableDatabase()会调用onConfigure()，如果第一是获取到只读形式的数据库，当转换成可写形式数据库时会再次调用onConfigure()。
 
 - onCreate()
-   mDatabase第一次创建时会调用onCreate()
+
+mDatabase第一次创建时会调用onCreate()
 
 - onUpdate() / onDowngrade()
-   在版本改变时会调用相应的onUpdate()或onDowngrade()方法，
+
+在版本改变时会调用相应的onUpdate()或onDowngrade()方法，
 
 - onConfigure()
-   至于onOpen()的调用规则同onConfigure()。
+
+至于onOpen()的调用规则同onConfigure()。
 
 那么onConfigure()和onOpen()方法可以干嘛呢，从api文档可以看到：
 
@@ -130,13 +134,13 @@ private SQLiteDatabase getDatabaseLocked(boolean writable) {
 - 而onOpen()方法是说明数据库已经打开，可以进行一些自己的操作，但是**需要通过SQLiteDatabase#isReadOnly方法检查数据库是否真正打开了**
 
 - 开启WAL方法：setWriteAheadLoggingEnabled(boolean enabled)
-  WAL支持读写并发，是通过将修改的数据单独写到一个wal文件中，默认在到达一个checkpoint时会将数据合并入主数据库中
-  至于关于WAL的详细介绍和分析可以参见SQLite3性能深入分析](http://blog.xcodev.com/posts/sqlite3-performance-indeep/)
 
+WAL支持读写并发，是通过将修改的数据单独写到一个wal文件中，默认在到达一个checkpoint时会将数据合并入主数据库中
+至于关于WAL的详细介绍和分析可以参见SQLite3性能深入分析](http://blog.xcodev.com/posts/sqlite3-performance-indeep/)
 
-##SQLiteDatabase
+## 2. SQLiteDatabase
 
-####open
+#### open
 
 获取SQLiteDatabase对象，从上面可以看到getReadableDatabase()、getWritableDatabase()是通过SQLiteDatabase.openDatabase(..)创建数据库，那么其中包含那些细节呢？
 
@@ -163,7 +167,7 @@ private void open() {
             openInner();
         }
     } catch (SQLiteException ex) {
-        // .... 
+        // ....
     }
 }
 
@@ -261,8 +265,7 @@ private void open() {
 
 而数据库连接SQLiteConnection则在其中包装了native的sqlite3对象，数据库sql语句最终会通过sqlite3对象执行
 
-####insert
-
+#### insert
 
 那么接下来就可以对数据库进行一些CRUD操作
 
@@ -356,8 +359,6 @@ public long executeForLastInsertedRowId(String sql, Object[] bindArgs,
     }
 }
 ```
-
-
 **流程图：**
 ![insert](http://img.blog.csdn.net/20160604105614763)
 
@@ -417,18 +418,13 @@ SQLiteProgram(SQLiteDatabase db, String sql, Object[] bindArgs,
 
 在获取`PreparedStatement`的时候，可以看到PreparedStatement通过一个mPreparedStatementCache来进行缓存操作，具体是一个`LruCache<String, PreparedStatement>`来完成sql的缓存
 
-
-
-
-####replace、delete
+#### replace、delete
 
 同理的操作有replace()、replaceOrThrow、delete、updateupdateWithOnConflict、execSQL等函数。
 
 读者可按照前面思路分析
 
-
-####query
-
+#### query
 
 现在重点分析一下SQLiteDatabase的查询操作：
 
@@ -569,11 +565,10 @@ protected void clearOrCreateWindow(String name) {
 public CursorWindow(String name) {
     // ...
     mWindowPtr = nativeCreate(mName, sCursorWindowSize);
-    
-    // .. 
+
+    // ..
 }
 ```
-
 
 nativeCreate通过JNI调用CursorWindow.cpp的create():
 
@@ -608,11 +603,10 @@ mQuery.fillWindow(mWindow, startPos, requiredPos, true);
 
 至于共享内存的知识点，可以参考[ Android系统匿名共享内存Ashmem](http://blog.csdn.net/luoshengyang/article/details/6666491)
 
-
-##总结
+## 总结
 
 经过上面分析，关于数据库的操作应该有了大致的了解：
-![这里写图片描述](http://img.blog.csdn.net/20160604134640551)
+![sqlite](http://img.blog.csdn.net/20160604134640551)
 
 当然里面也有些地方也是可以加以改善，取得更好的效率。
 

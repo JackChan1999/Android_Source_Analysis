@@ -1,6 +1,6 @@
-#LocalBroadcastManager源码解析
+## LocalBroadcastManager源码解析
 
-##1.简介
+## 1.简介
 
 LocalBroadcastManager是Android v4兼容包提供的应用内广播发送与接收的工具类。BroadcastReceiver的通信是基于Binder机制，而LocalBroadcastManager的核心是基于Handler机制。
 
@@ -10,9 +10,9 @@ LocalBroadcastManager是Android v4兼容包提供的应用内广播发送与接�
 - 广播数据不用担心别的应用伪造广播，更加安全。
 - 因为只在应用内广播，所以更加的高效。
 
-##2.基本使用方法
+## 2.基本使用方法
 
-###2.1 自定义 BroadcastReceiver 子类
+### 2.1 自定义 BroadcastReceiver 子类
 
 ```java
 public class LocalBroadcastReceiver extends BroadcastReceiver {
@@ -24,7 +24,7 @@ public class LocalBroadcastReceiver extends BroadcastReceiver {
 }
 ```
 
-###2.2 注册广播
+### 2.2 注册广播
 
 ```java
 LocalBroadcastReceiver localReceiver = new LocalBroadcastReceiver();  
@@ -32,36 +32,34 @@ IntentFilter filter = new IntentFilter(ACTION_LOCAL_SEND);
 LocalBroadcastManager.getInstance(context).registerReceiver(localReceiver, filter);  
 ```
 
-###2.3 发送广播
+### 2.3 发送广播
 
 ```java
 LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(ACTION_LOCAL_SEND));  
 ```
 
-
-###2.4 取消广播注册
+### 2.4 取消广播注册
 
 ```java
-LocalBroadcastManager.getInstance(context).unregisterReceiver(localReceiver); 
+LocalBroadcastManager.getInstance(context).unregisterReceiver(localReceiver);
 ```
 
-##3.源码解析
+## 3.源码解析
 
-###3.1 LocalBroadcastManager原理概要
-
+### 3.1 LocalBroadcastManager原理概要
 
 LocalBroadcastManager使用单例模式对象，初始化时会在内部初始化一个Handler对象用来接受广播。注册广播时，会将自定义的BroadcastReceiver对象和IntentFilter对象保存到HashMap中。发送广播时，则根据IntentFilter的Action值从已保存的HashMap找到对应接受者，并发送Handler消息去执行receiver的onReceive方法。
 
 LocalBroadcastManager核心代码为以下四个函数。
 
-- registerReceiver(BroadcastReceiver receiver, IntentFilter filter)    //注册广播函数
-- unregisterReceiver(BroadcastReceiver receiver)    //取消注册函数
- - sendBroadcast(Intent intent)		//发送广播
-  - executePendingBroadcasts()   //处理接受到的广播
+```java
+registerReceiver(BroadcastReceiver receiver, IntentFilter filter) // 注册广播函数
+unregisterReceiver(BroadcastReceiver receiver)    //取消注册函数
+sendBroadcast(Intent intent)		//发送广播
+executePendingBroadcasts()     //处理接受到的广播
+```
 
-
-
-###3.2 LocalBroadcastManager基本数据结构
+### 3.2 LocalBroadcastManager基本数据结构
 
 LocalBroadcastManager需要保存三样东西，一个是 **mReceivers**, 用来保存已注册的自定义的receiver和intentFilter。一个是 **mActions** 键值对，保存action和ReceiverRecord列表的键值对。一个是 **mPendingBroadcasts** , 用来保存待通知的receiver对象。
 
@@ -71,7 +69,7 @@ LocalBroadcastManager需要保存三样东西，一个是 **mReceivers**, 用来
         final IntentFilter filter;
         final BroadcastReceiver receiver;
         boolean broadcasting;
-        
+
         ReceiverRecord(IntentFilter _filter, BroadcastReceiver _receiver) {
             filter = _filter;
             receiver = _receiver;
@@ -81,7 +79,7 @@ LocalBroadcastManager需要保存三样东西，一个是 **mReceivers**, 用来
 
 private final HashMap<BroadcastReceiver, ArrayList<IntentFilter>> mReceivers
         = new HashMap<BroadcastReceiver, ArrayList<IntentFilter>>();
-        
+
 private final HashMap<String, ArrayList<ReceiverRecord>> mActions
         = new HashMap<String, ArrayList<ReceiverRecord>>();
 
@@ -98,13 +96,10 @@ private static class BroadcastRecord {
         receivers = _receivers;
     }
 }
-    
+
 ```
 
-
-
-
-###3.3  注册广播
+### 3.3 注册广播
 
 将需要注册的receiver对象和该receiver需要监听的filter保存到 **mReceivers** 和 **mPendingBroadcasts** 中。
 
@@ -139,7 +134,7 @@ public void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
 }
 ```
 
-###3.4  取消广播注册
+### 3.4 取消广播注册
 
 根据receiver对象移除 **mReceivers** 和 **mPendingBroadcasts** 中对应的对象。
 
@@ -182,7 +177,7 @@ public void unregisterReceiver(BroadcastReceiver receiver) {
 }
 ```
 
-###3.5  通过Handler发送广播
+### 3.5 通过Handler发送广播
 
 发送广播时，先根据intent中的action到**mActions**中找到对应的记录，然后再完整匹配filter里面的各个字段，若匹配成功，则将对应的receiver添加的**mPendingBroadcasts**列表中，等待handler对象的handleMessage()方法处理。
 
@@ -210,14 +205,14 @@ public boolean sendBroadcast(Intent intent) {
 
         //根据intent的action寻找ReceverRecord
         ArrayList<ReceiverRecord> entries = mActions.get(intent.getAction());
-        
+
         if (entries != null) {
- 
+
             ArrayList<ReceiverRecord> receivers = null;
             for (int i=0; i<entries.size(); i++) {
-            
+
                 ReceiverRecord receiver = entries.get(i);
-					//相同的receiver,只添加一次 
+					//相同的receiver,只添加一次
                 if (receiver.broadcasting) {
                     continue;
                 }
@@ -230,7 +225,7 @@ public boolean sendBroadcast(Intent intent) {
                         receivers = new ArrayList<ReceiverRecord>();
                     }
                     receivers.add(receiver);
-                    //标记为已添加，待广播状态 
+                    //标记为已添加，待广播状态
                     receiver.broadcasting = true;
                 } else {
  						...
@@ -238,20 +233,20 @@ public boolean sendBroadcast(Intent intent) {
             }
 
             if (receivers != null) {
-            
+
             		//receivers添加完成后，将broadcasting状态回归
                 for (int i=0; i<receivers.size(); i++) {
                     receivers.get(i).broadcasting = false;
                 }
-                
+
                 //添加到待广播列表
                 mPendingBroadcasts.add(new BroadcastRecord(intent, receivers));
-                
+
                 //若无正在处理的消息，则handler发送广播消息
                 if (!mHandler.hasMessages(MSG_EXEC_PENDING_BROADCASTS)) {
                     mHandler.sendEmptyMessage(MSG_EXEC_PENDING_BROADCASTS);
                 }
-                
+
                 return true;
             }
         }
@@ -260,7 +255,7 @@ public boolean sendBroadcast(Intent intent) {
 
 ```
 
-###3.6  Handler接受和消费广播
+### 3.6 Handler接受和消费广播
 
 在handler对象的handleMessage()方法中遍历 **mPendingBroadcasts** 列表, 依次循环调用其中的onReceive()方法，并将intent中的数据传入，从而消费广播信息。
 
@@ -296,7 +291,7 @@ private void executePendingBroadcasts() {
             mPendingBroadcasts.toArray(brs);
             mPendingBroadcasts.clear();
         }
-        
+
         for (int i=0; i<brs.length; i++) {
             BroadcastRecord br = brs[i];
             for (int j=0; j<br.receivers.size(); j++) {
@@ -306,6 +301,6 @@ private void executePendingBroadcasts() {
         }
 }
 ```
-##4.总结
+## 4.总结
 
 LocalBroadcastManager在应用内使用起来比较简单高效，但是其也是有一些缺点的。比如LocalBroadcastManager并不支持静态注册广播，也不支持有序广播的一些功能。不过如果仅仅是普通广播通信也是够用了。

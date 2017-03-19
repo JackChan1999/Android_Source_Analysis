@@ -2,11 +2,12 @@ CompoundButton 是一个有两种状态（选中和未选中 / checkd unchecked�
 
 ## 特点
 
-- 是一个抽象类（abstract），所以我们不能直接使用它，只有自定义实现或者系统已经提供的它的一直子类（ToggleButton，Checkbox，RadioButton 等等）。
-- 继承自Button，而Button 继承自TextView，所以Button，TextView 的特性CompoundButton 都是具备的。
-- 实现自Checkable 接口（interface），利用它可以设置状态（setChecked(boolean checked)），获取状态（isChecked()）和切换状态（toggle()）。
+- 是一个抽象类（abstract），所以我们不能直接使用它，只有自定义实现或者系统已经提供的它的一直子类（ToggleButton，Checkbox，RadioButton 等等）
+- 继承自Button，而Button 继承自TextView，所以Button，TextView 的特性CompoundButton 都是具备的
+- 实现自Checkable 接口（interface），利用它可以设置状态（setChecked(boolean checked)），获取状态（isChecked()）和切换状态（toggle()）
 
-最后的效果图就是这样的。<br />
+最后的效果图就是这样的。
+
 ![](http://ww2.sinaimg.cn/large/68622377gw1f36nyso3hsg20c0034dfy.gif)
 
 ## 分析

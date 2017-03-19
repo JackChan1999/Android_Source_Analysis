@@ -1,65 +1,27 @@
 # SearchView源码解析
 
 SearchView是一个搜索框控件，样式也挺好看的。这次解析主要围绕`android.support.v7.widget`包下的SearchView（API >= 7）,`android.widget.SearchView`支持API >= 11，
-另外有个`android.support.v4.widget.SearchViewCompat`。
+另外有个`android.support.v4.widget.SearchViewCompat`
 
 <img src="https://raw.githubusercontent.com/nukc/SearchViewAnalysis/master/art/searchview.mov.gif">
 
-## 目录
-
-- <a href="#analysis">1. 源码解析</a>
- - <a href="#extends">1.1 继承关系</a>
- - <a href="#widgets">1.2 主要组件</a>
- - <a href="#construct">1.3 构造方法和自定义</a>
- - <a href="#listener">1.4 Listener</a>
- - <a href="#collapsibleactionview">1.5 CollapsibleActionView接口</a>
- - <a href="#instancestate">1.6 状态的保存和恢复</a>
- - <a href="#suggestions">1.7 关于Suggestions和Searchable</a>
- - <a href="#voice">1.8 语音搜索功能</a>
- - <a href="#reflector">1.9 AutoCompleteTextViewReflector</a>
- - <a href="#onmeasure">1.10 onMeasure 测量</a>
-- <a href="#future">2. 展望未来</a>
-
-## <div id="analysis">1. 源码解析</div>
+## 1. 源码解析
 
 v7版本：23.2.1
 
-#### <div id="extends">1.1 继承关系</div>
+### 1.1 继承关系
 
-<table>
-   <tbody>
-        <tr>
-        <td colspan="5">java.lang.Object</td>
-        </tr>
-        <tr>
-        <td>&nbsp;&nbsp;&nbsp;↳</td>
-        <td colspan="4">android.view.View</td>
-        </tr>
-    <tr>
-            <td>&nbsp;</td>
-            <td>&nbsp;&nbsp;&nbsp;↳</td>
-            <td colspan="3">android.view.ViewGroup</a></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;&nbsp;&nbsp;↳</td>
-            <td colspan="2">android.support.v7.widget.LinearLayoutCompat</td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;&nbsp;&nbsp;↳</td>
-            <td colspan="1">android.support.v7.widget.SearchView</td>
-        </tr>
-    </tbody>
-</table>
+```
+java.lang.Object
+	↳ android.view.View
+		↳ android.view.ViewGroup
+			↳ android.support.v7.widget.LinearLayoutCompat
+				↳ android.support.v7.widget.SearchView
+```
 
-#### <div id="widgets">1.2 主要组件</div>
+### 1.2 主要组件
 
 ```java
-
     private final SearchAutoComplete mSearchSrcTextView;
     private final View mSearchEditFrame;
     private final View mSearchPlate;
@@ -70,11 +32,10 @@ v7版本：23.2.1
     private final ImageView mVoiceButton;
     private final View mDropDownAnchor;
     private final ImageView mCollapsedIcon;
-
 ```
 看命名也能大概知道控件各自充当了什么角色了。
 
-#### <div id="construct">1.3 构造方法和自定义</div>
+### 1.3 构造方法和自定义
 
 接下来看构造方法`public SearchView(Context context, AttributeSet attrs, int defStyleAttr)`,`v7`的`SearchView`并不是用`TypedArray`而是使用`TintTypedArray`，看了源码发现`TintTypedArray`里有个：``` private final TypedArray mWrapped; ```所以主要还是`TypedArray`，不同点是`getDrawable(int index)`和新加的`getDrawableIfKnown(int index)`方法，
 并在满足条件下会调用`AppCompatDrawableManager.get().getDrawable(mContext, resourceId)`。
@@ -115,7 +76,7 @@ v7版本：23.2.1
 
 ```
 
-#### <div id="listener">1.4 Listener</div>
+### 1.4 Listener
 
 然后，我们来看看`SearchView`里面有哪些Listener：
 
@@ -215,21 +176,19 @@ v7版本：23.2.1
     }
 ```
 
-在if里加入`!mOnQueryChangeListener.onQueryTextSubmit(query.toString())`，这样做就可以让使用者自己决定是否完全自己处理,
-灵活性也更高。
+在if里加入`!mOnQueryChangeListener.onQueryTextSubmit(query.toString())`，这样做就可以让使用者自己决定是否完全自己处理，灵活性也更高。
 
 其他Listener差不多也是这样，那接下来看看其他的。
 
-#### <div id="collapsibleactionview">1.5 CollapsibleActionView接口</div>
+### 1.5 CollapsibleActionView接口
 
 SearchView实现了CollapsibleActionView接口：onActionViewExpanded()和onActionViewCollapsed(),具体操作就是
-设置键盘及控件，并使用全局变量`mExpandedInActionView`记录ActionView是否伸展。只有当SearchView作为MenuItem的时候
-才会触发，如果是使用v7包的话，想要通过menu获取SearchView就需要使用MenuItemCompat类，具体可以看demo。
+设置键盘及控件，并使用全局变量`mExpandedInActionView`记录ActionView是否伸展。只有当SearchView作为MenuItem的时候才会触发，如果是使用v7包的话，想要通过menu获取SearchView就需要使用MenuItemCompat类，具体可以看demo。
 ```java
-    MenuItemCompat.getActionView(android.view.MenuItem item);
+MenuItemCompat.getActionView(android.view.MenuItem item);
 ```
 
-#### <div id="instancestate">1.6 状态的保存和恢复</div>
+### 1.6 状态的保存和恢复
 
 SearchView覆写了onSaveInstanceState()和onRestoreInstanceState(Parcelable state)用来保存和恢复状态，为什么要覆写呢？
 因为需要额外保存`boolean mIconified`，为此还建了个内部静态类SavedState用来保存mIconified。
@@ -247,7 +206,7 @@ SearchView覆写了onSaveInstanceState()和onRestoreInstanceState(Parcelable sta
 
 ```
 
-#### <div id="suggestions">1.7 关于Suggestions和Searchable</div>
+### 1.7 关于Suggestions和Searchable
 
 如果你使用了Suggestions，而且没有setSearchableInfo，那么当你点击建议可选项的时候会log：
 
@@ -294,8 +253,7 @@ W/SearchView: Search suggestions cursor at row 0 returned exception.
     }
 ```
 
-发现调用mSearchable的方法之前并没有检查mSearchable是否为null，其他地方是有判断的，由于做了catch所以不会crash，
-也不影响使用，另外，如果setOnSuggestionListener：
+发现调用mSearchable的方法之前并没有检查mSearchable是否为null，其他地方是有判断的，由于做了catch所以不会crash，也不影响使用，另外，如果setOnSuggestionListener：
 
 ```java
     mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -317,7 +275,7 @@ onSuggestionClick(int position) 返回 true 就不会执行`createIntentFromSugg
 那既然是报null，那就设置Searchable吧，设置后是会startActivity的(执行完createIntentFromSuggestion(~)后就会执行)。
 然后效果就是当你点击了可选项就会startActivity，看需求做选择吧。。
 
-#### <div id="voice">1.8 语音搜索功能</div>
+### 1.8 语音搜索功能
 
 SearchView还有语音搜索功能(API >= 8)，需要通过配置Searchable来开启，在xml配置文件中加入：
 
@@ -341,12 +299,11 @@ debug后发现在hasVoiceSearch()里：
     return ri != null;
 ```
 
-在这里并没有resolve到Activity，结果return false，mVoiceButtonEnabled也就变成false了。(┙>∧<)┙へ┻┻
+在这里并没有resolve到Activity，结果return false，mVoiceButtonEnabled也就变成false了
 
-终于知道为什么了，原来阉割版的系统都不会出现语音搜索按钮，华为/魅族/Genymotion试过都不行(没有试过全版本系统),
-AS自带模拟器可以(有Google服务)，具体应该就是没有resolve到Google语音识别Activity。对语音识别有兴趣的同学可以搜索RecognizerIntent。
+终于知道为什么了，原来阉割版的系统都不会出现语音搜索按钮，华为/魅族/Genymotion试过都不行(没有试过全版本系统)，AS自带模拟器可以(有Google服务)，具体应该就是没有resolve到Google语音识别Activity。对语音识别有兴趣的同学可以搜索RecognizerIntent。
 
-#### <div id="reflector">1.9 AutoCompleteTextViewReflector</div>
+### 1.9 AutoCompleteTextViewReflector
 
 v7包的SearchView使用了反射机制，通过反射拿到AutoCompleteTextView和InputMethodManager隐藏的方法。
 
@@ -395,15 +352,16 @@ v7包的SearchView使用了反射机制，通过反射拿到AutoCompleteTextView
 
 ```
 
-#### <div id="onmeasure">1.10 onMeasure 测量</div>
+### 1.10 onMeasure 测量
 
 查看了下`onMeasure`，发现有个地方还是比较在意的。 当`isIconified()`返回`false`的时候，width的mode在最后都会被设置成`MeasureSpec.EXACTLY`。
+
 在SearchView伸展收缩的时候，`onMeasure`会被执行多次，width根据其mode改变, 之后mode设置为EXACTLY再调用父类super方法进行测量。
 
 设置为EXACTLY，这样父控件就能确切的决定view的大小，那为什么只对width而不对height进行设置呢?
 
-通过查看默认的 [layout](https://github.com/nukc/SearchViewAnalysis/blob/master/app%2Fsrc%2Fmain%2Fres%2Flayout%2Flayout_search.xml)，
-可以看到主要组件的layout_height的大多都是match_parent(对应EXACTLY模式)，而layout_width基本都是wrap_content(对应AT_MOST模式)。
+通过查看默认的 [layout](https://github.com/nukc/SearchViewAnalysis/blob/master/app%2Fsrc%2Fmain%2Fres%2Flayout%2Flayout_search.xml)，可以看到主要组件的layout_height的大多都是match_parent(对应EXACTLY模式)，而layout_width基本都是wrap_content(对应AT_MOST模式)。
+
 另外，不是只有伸展收缩的时候，`onMeasure`才会被执行, 点击语音搜索按钮/输入框获取焦点的时候/...也会执行。
 
 ```java
@@ -445,7 +403,7 @@ v7包的SearchView使用了反射机制，通过反射拿到AutoCompleteTextView
 
 ```
 
-## <div id="future">2. 展望未来</div>
+## 2. 展望未来
 
 在v7包的SearchView里，有一个声明并初始化了的变量，但并没有用到过:
 
@@ -457,6 +415,7 @@ v7包的SearchView使用了反射机制，通过反射拿到AutoCompleteTextView
 ```
 
 或许后续版本会用到吧! 抱着好奇的心去看了`AppCompatDrawableManager`源码，但并没有注释说明这个类是干什么用的，看名字只知道是管理Drawable的。
+
 既然这样，那就来看下`AppCompatDrawableManager`能干些什么吧。
 
 一步一步来，先看看它初始化的时候干了些什么，查看`get()`方法:
@@ -500,6 +459,4 @@ v7包的SearchView使用了反射机制，通过反射拿到AutoCompleteTextView
 
 有兴趣的同学可以搜下相关资料，这里就不再深入了。
 
-------------------------------------------------------------------------
-
-如果我哪里分析错了，请大家及时纠正我，谢谢。:)
+如果我哪里分析错了，请大家及时纠正我，谢谢。

@@ -1,27 +1,7 @@
-# Media Player 源码分析
-
-**目录**
-- [1.简介](#简介)
-- [2.Media Server](#2media-server)
-- [3.MediaPlayer 调用流程](#3mediaplayer-调用流程)
-    - [3.1 构造函数](#31-构造函数)
-    - [3.2 设置数据源](#32-设置数据源)
-        - [3.2.1 获取 MediaPlayerService 接口](#321-获取-mediaplayerservice-接口)
-        - [3.2.2 获取 MediaPlayer 接口](#322-获取-mediaplayer-接口)
-        - [3.2.3 设置数据源](#323-设置数据源)
-    - [3.3 Prepare](#33-prepare)
-    - [3.4 start](#34-start)
-    - [3.5 pause](#35-pause)
-    - [3.6 stop](#36-stop)
-    - [3.7 release](#37-release)
-- [4.总结](#4总结)
-- [5.参考](#5参考)
-
-
+## Media Player 源码分析
 
 ## 1.简介
-MediaPlayer 中大部分的功能使用 C++ 实现，Java 这边做的工作大部分是 JNI 的调用，这篇文章主要分析了常用的几个接口对应 C++ 实现和 Media Server。 
-
+MediaPlayer 中大部分的功能使用 C++ 实现，Java 这边做的工作大部分是 JNI 的调用，这篇文章主要分析了常用的几个接口对应 C++ 实现和 Media Server。
 
 ## 2.Media Server
 
@@ -35,7 +15,7 @@ Media Server 整体的架构是 C/S 架构，C 和 S 之间的通讯是 IPC，�
 
 下面先从 Java 层的调用顺序开始看一下整个调用的流程。
 
-## 3.MediaPlayer 调用流程
+## 3. MediaPlayer 调用流程
 
 [MediaPlayer](https://developer.android.com/reference/android/media/MediaPlayer.html) 中涉及到的主要函数都是通过 JNI 来完成的，MediaPlayer.java 对应的是 [android_media_MediaPlayer.cpp](https://android.googlesource.com/platform/frameworks/base/+/android-5.1.1_r18/media/jni/android_media_MediaPlayer.cpp)。其中的对应关系如下，省略了一部分不是特别重要的。
 
