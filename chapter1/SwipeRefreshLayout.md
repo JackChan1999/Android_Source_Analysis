@@ -1,11 +1,10 @@
 ## 简介
+
 [官方文档](http://developer.android.com/intl/zh-cn/reference/android/support/v4/widget/SwipeRefreshLayout.html)
 
 `SwipeRefreshLayout` 是一个下拉刷新控件，几乎可以包裹一个任何可以滚动的内容（ListView GridView ScrollView RecyclerView），可以自动识别垂直滚动手势。使用起来非常方便。
 
-|                                          |                                          |
-| :--------------------------------------: | :--------------------------------------: |
-| ![](http://img.blog.csdn.net/20150127120706062) | ![](http://img.blog.csdn.net/20150127121649015) |
+![](images/SwipeRefreshLayout1) ![](images/SwipeRefreshLayout2)
 
  1.将需要下拉刷新的空间包裹起来
 
@@ -78,8 +77,6 @@ java.lang.Object
 ```
 SwipeRefreshLayout 的分析分为两个部分：**自定义 ViewGroup 的部分**，**处理和子视图的嵌套滚动部分**。
 
-
-
 ### SwipeRefreshLayout extends ViewGroup
 
 其实就是一个自定义的 ViewGroup ，结合我们自己平时自定义 ViewGroup 的步骤：
@@ -90,8 +87,6 @@ SwipeRefreshLayout 的分析分为两个部分：**自定义 ViewGroup 的部分
 4. 处理交互 （`dispatchTouchEvent` `onInterceptTouchEvent` `onTouchEvent`）
 
 接下来就按照上面的步骤进行分析。
-
-
 
 #### 1.初始化变量
 
