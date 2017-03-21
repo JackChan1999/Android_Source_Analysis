@@ -7,7 +7,7 @@ MediaPlayer 中大部分的功能使用 C++ 实现，Java 这边做的工作大�
 
 Media Server 整体的架构是 C/S 架构，C 和 S 之间的通讯是 IPC，具体来说是 Binder。Media Server 中大量的用到了 Binder。整个架构将播放控制、视频、音频、相机等和多媒体有关的这些包装成不同的服务，通过 IPC 解耦。下图是 Google 关于 Android 中 [Media 引擎](https://source.android.com/devices/media.html)的架构做的关系图。
 
-![Media 架构](https://source.android.com/devices/images/ape_fwk_media.png)
+![Media 架构](../assets/mediaplayer1.png)
 
 在系统 mediaserver 作为一个单独的进程，负责整个系统的音频视频编解码工作：
 
