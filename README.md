@@ -28,9 +28,10 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
 - [GitHub托管](https://github.com/JackChen1999/Android_Source_Analysis)
 
 
-# 目录
+## 目录
 
 * [前言](README.md)
+
 * [Android源码分析 公共技术点](common\README.md)
   * [公共技术点之Java反射](common/公共技术点之Java反射.md)
   * [公共技术点之Java注解](common/公共技术点之Java注解.md)
@@ -38,6 +39,7 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
   * [公共技术点之View绘制流程](common/公共技术点之View绘制流程.md)
   * [公共技术点之View事件传递](common/公共技术点之View事件传递.md)
   * [公共技术点之Android动画基础](common/公共技术点之Android动画基础.md)
+
 * [Android源码分析 第1期](chapter1/README.md)
   * [AsyncTask源码分析](chapter1/AsyncTask源码分析.md)
   * [Binder源码分析](chapter1/Binder源码分析.md)
@@ -52,6 +54,7 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
   * [TabLayout源码解析](chapter1/TabLayout源码解析.md)
   * [TextView源码解析](chapter1/TextView源码解析.md)
   * [ViewDragHelper源码解析](chapter1/ViewDragHelper源码解析.md)
+
 * [Android源码分析 第2期](chapter2\README.md)
   * [Bundle源码解析](chapter2/Bundle源码解析.md)
   * [Handler源码解析](chapter2/Handler源码解析.md)
@@ -66,6 +69,7 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
   * [SharePreferences源码解析](chapter2/SharePreferences源码解析.md)
   * [SQLiteOpenHelper源码解析](chapter2/SQLiteOpenHelper源码解析.md)
   * [TextInputLayout源码解析](chapter2/TextInputLayout源码解析.md)
+
 * [Android源码分析 第3期](chapter3\README.md)
   * [Android Lock Pattern 源码解析](chapter3/Android%20Lock%20Pattern%20源码解析.md)
   * [Android Universal Image Loader 源码分析](chapter3/Android%20Universal%20Image%20Loader%20源码分析.md)
@@ -86,6 +90,7 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
   * [ViewPagerindicator 源码解析](chapter3/ViewPagerindicator%20源码解析.md)
   * [Volley源码解析](chapter3/Volley源码解析.md)
   * [xUtils 源码解析](chapter3/xUtils%20源码解析.md)
+
 * [Android源码设计模式分析 第4期](design_patterns/android_design_patterns_analysis.md)
   * [面向对象六大原则](design_patterns/oop-principles/oop-principles.md)
   * [Android设计模式源码解析之单例模式](design_patterns/singleton/readme.md)
@@ -100,3 +105,15 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
   * [Android设计模式源码解析之代理模式](design_patterns/proxy/README.md)
   * [Android设计模式源码解析之策略模式](design_patterns/strategy/README.md)
   * [Android设计模式源码解析之模板方法模式](design_patterns/template-method/readme.md)
+
+  ## 关注我
+
+  - Email：<815712739@qq.com>
+  - CSDN博客：[Allen Iverson](http://blog.csdn.net/axi295309066)
+  - 新浪微博：[AndroidDeveloper](http://weibo.com/u/1848214604?topnav=1&wvr=6&topsug=1&is_all=1)
+  - GitHub：[JackChen1999](https://github.com/JackChen1999)
+  - GitBook：[alleniverson](https://www.gitbook.com/@alleniverson)
+
+  |                   微信打赏                   |                  支付宝打赏                   |
+  | :--------------------------------------: | :--------------------------------------: |
+  | <img src="assets/weixin.png" width="300" /> | <img src="assets/支付宝.jpg" width="300" /> |
