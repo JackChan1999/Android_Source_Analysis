@@ -114,6 +114,6 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
   - GitHub：[JackChen1999](https://github.com/JackChen1999)
   - GitBook：[alleniverson](https://www.gitbook.com/@alleniverson)
 
-  |                   微信打赏                   |                  支付宝打赏                   |
-  | :--------------------------------------: | :--------------------------------------: |
-  | <img src="assets/weixin.png" width="300" /> | <img src="assets/支付宝.jpg" width="300" /> |
+|                   微信打赏                   |                  支付宝打赏                   |
+| :--------------------------------------: | :--------------------------------------: |
+| <img src="assets/weixin.png" width="300" /> | <img src="assets/支付宝.jpg" width="300" /> |
