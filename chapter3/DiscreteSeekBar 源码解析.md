@@ -1,6 +1,6 @@
 ## DiscreteSeekBar 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[discreteSeekBar](https://github.com/AnderWeb/discreteSeekBar)，分析者：[wangeason](https://github.com/wangeason)，校对者：[Trinea](https://github.com/Trinea)
+项目：[discreteSeekBar](https://github.com/AnderWeb/discreteSeekBar)，分析者：[wangeason](https://github.com/wangeason)，校对者：[Trinea](https://github.com/Trinea)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 DiscreteSeekBar 部分
 > 项目地址：[discreteSeekBar](https://github.com/AnderWeb/discreteSeekBar)，分析的版本：[f54f0cd6](https://github.com/AnderWeb/discreteSeekBar/commit/f54f0cd64cd33da9effe9103d80bcc408178d171)，Demo 地址：[discrete-seek-bar-demo](https://github.com/aosp-exchange-group/android-open-project-demo/tree/master/discrete-seek-bar-demo)
@@ -218,7 +218,7 @@ public void setNumericTransformer
 设置 Transformer，并刷新 Marker 上的显示
 
 ```java
-public void setMax(int max) 
+public void setMax(int max)
 public void setMin(int min)
 ```
 

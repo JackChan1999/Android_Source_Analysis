@@ -1,6 +1,6 @@
 ## ViewPagerindicator 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/)，分析者：[lightSky](https://github.com/lightSky)，校对者：[aaronplay](https://github.com/AaronPlay)
+项目：[ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/)，分析者：[lightSky](https://github.com/lightSky)，校对者：[aaronplay](https://github.com/AaronPlay)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 ViewPagerindicator 部分
 > 项目地址：[ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/)，分析的版本：[8cd549f](https://github.com/JakeWharton/Android-ViewPagerIndicator/commit/8cd549f23f3d20ff920e19a2345c54983f65e26b)，Demo 地址：[ViewPagerIndicator Demo](https://github.com/android-cn/android-open-project-demo/tree/master/viewpager-indicator-demo)
@@ -17,6 +17,7 @@ ViewPagerIndicator 用于各种基于 AndroidSupportLibrary 中 ViewPager 的界
 该项目总体设计非常简单，一个 pageIndicator 接口类，具体样式的导航类实现该接口，然后根据具体样式去实现相应的逻辑。 IcsLinearLayout：LinearLayout 的扩展，支持了 4.0 以上的 divider 特性。 CirclePageIndicator、LinePageIndicator、UnderlinePageIndicator、TitlePagerIndicator 继承自 View。TabPageIndicator、IconPageIndicator 继承自 HorizontalScrollView。
 
 CirclePageIndicator、LinePageIndicator、UnderlinePageIndicator 继承自 View 的原因是它们样式相对简单，继承 View，自己去定制一套测量和绘制逻辑更简单，而且免去了 Measure 部分繁琐的步骤，效率更高。
+
 TitlePagerIndicator 相对复杂，Android 系统提供的控件中没有类似的，而且实现底部线条的精准控制也复杂，所以只能继承自 View，实现绘制逻辑，达到理想的 UI 效果。
 
 TabPageIndicator、IconPageIndicator 继承自 HorizontalScrollView 是由于它们各自的 ChildView 较多，而且具有相似性些，继承自 LinearLayout，通过 for 循环一个个 add 上去更简单，而且 HorizontalScrollView 具有水平滑动的功能，当 tab 比较多的时候，可以左右滑动。
@@ -70,31 +71,39 @@ ACTION_POINTER_DOWN、ACTION_POINTER_UP:多触摸手势事件中的按下和抬�
 ##### 3.3.1 CirclePageIndicator
 
 继承自 View 实现了 PageIndicator,整个绘制过程中用到的方法调用规则为：
-![circle_indicator_method_flow img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/view/other/view-pager-indicator/image/circle_indicator_method_flow.png)
+![circle_indicator_method_flow img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/view/other/view-pager-indicator/image/circle_indicator_method_flow.png)     
+
 **(1) 主要成员变量含义**
-1.`mCurrentPage` 当前界面的索引
-2.`mSnapPage` Sanp 模式下，当前界面的索引
-3.`mPageOffset` ViewPager 的水平偏移量
-4.`mScrollState` ViewPager 的滑动状态
-5.`mOrientation` Indicator 的模式：水平、竖直
-6.`mLastMotionX` 每一次 onTouch 事件产生时水平位置的最后偏移量
-7.`mActivePointerId` 当前处于活动中 pointer 的 ID 默认值为 -1
-8.`mIsDragging` 用户是否主观的滑动屏幕的标识
-9.`mSnap`
+
+- `mCurrentPage` 当前界面的索引    
+- `mSnapPage` Sanp 模式下，当前界面的索引    
+- `mPageOffset` ViewPager 的水平偏移量    
+- `mScrollState` ViewPager 的滑动状态    
+- `mOrientation` Indicator 的模式：水平、竖直    
+- `mLastMotionX` 每一次 onTouch 事件产生时水平位置的最后偏移量    
+- `mActivePointerId` 当前处于活动中 pointer 的 ID 默认值为 -1   
+- `mIsDragging` 用户是否主观的滑动屏幕的标识    
+- `mSnap`
+
 circle 有 2 种绘制模式:
-mSnap = true：ViewPager 滑动过程中，circle 之间不绘制，只绘制最终的实心点
+
+mSnap = true：ViewPager 滑动过程中，circle 之间不绘制，只绘制最终的实心点   
+
 mSnap = false：ViewPager 滑动过程中，相邻 circle 之间根据 mPageOffset 实时绘制 circle
-10.`mTouchSlop`
+
+- `mTouchSlop`
+
 指在用户触摸事件可被识别为移动手势前,移动过的那一段像素距离。
 Touchslop 通常用来预防用户在做一些其他操作时意外地滑动，例如触摸屏幕上的元素时产生的滑动。
 
-**(2) 核心方法**
+**(2) 核心方法**    
 1.**onDraw(Canvas canvas)**
+
 `threeRadius`两相邻 circle 的间距
 `shortOffset`当前方向的垂直方向的圆心坐标位置
 `longOffset` 当前方向的圆心位置
 
-```
+```java
     //循环的 draw circle
         for (int iLoop = 0; iLoop < count; iLoop++) {
             float drawLong = longOffset + (iLoop * threeRadius);//计算当前方向的每个 circle 偏移量
@@ -109,6 +118,7 @@ Touchslop 通常用来预防用户在做一些其他操作时意外地滑动，�
 ```
 
 2.**onTouchEvent(MotionEvent ev)**
+
 核心思想：获取拖拽过程中有效的触摸点，正确计算移动距离。这一部分为模板代码，在其它几种 Indicator 的实现中，对于 Touch 的事件的处理是相同的，
 `MotionEvent.ACTION_DOWN`:记录第一触摸点的 ID,获取当前水平移动距离
 `MotionEvent.ACTION_MOVE`: 获取第一点的索引并计算其偏移，处理用户是否是主观的滑动屏幕
@@ -119,6 +129,7 @@ page 的处理，处理完成，还原 mIsDragging，mActivePointerId、viewpage
 `MotionEventCompat.ACTION_POINTER_UP`:当非第一点离开屏幕时，获取抬起手指的 ID，如果之前跟踪的 mActivePointerId 是当前抬起的手指 ID，那么就重新为 mActivePointerId 赋值另一个活动中的 pointerId，最后再次获取仍活动在屏幕上 pointer 的 X 坐标值
 
 3.**onMeasure(int widthMeasureSpec, int heightMeasureSpec)**
+
 View 在测量阶段的最终大小的设定是由 setMeasuredDimension()方法决定的,也是必须要调用的方法，否则会报异常，这里就直接调用了 setMeasuredDimension()方法设置值了。根据 CircleIndicator 的方向，计算相应的 width、height
 
 ```
@@ -132,6 +143,7 @@ View 在测量阶段的最终大小的设定是由 setMeasuredDimension()方法�
 ```
 
 4.**measureLong**
+
 与之对应的有 measureShort，只是处理的方向不同
 如果该 View 的测量要求为 EXACTLY，则能直接确定子 View 的大小,该大小就是 MeasureSpec.getSize(measureSpec)的值
 如果该 View 的测量要求为 UNSPECIFIED 或 AT_MOST 模式，则根据实际需求计算宽度
@@ -277,8 +289,11 @@ vpi_attrs.xml
 ## 4. 杂谈
 
 大多数的 App 中的导航都类似，ViewPagerIndicator 能够满足你开发的基本需求，如果不能满足，你可以在源码的基础上进行一些简单的改造。其中有一点是很多朋友提出的就是 LineIndicator 没有实现 TextView 颜色状态的联动。这个有已经实现的开源库:[PagerSlidingTabStrip](https://github.com/jpardogo/PagerSlidingTabStrip)，你可以作为参考。
+
 对于什么时候需要自定义控件以及如何更好的进行自定义控件的定制，你可以参考这篇文章[深入解析 Android 的自定义布局](http://greenrobot.me/devpost/android-custom-layout) 相信会有一些启发。
+
 整片文章看下来，确实比较多，也是花了一部分时间写的，其实之前是自己整理了一些相关知识，这次一下全部跟大家分享了。整篇文章都在讲 View 的绘制机制，三个过程也都很详细的通过源码分析介绍了。如果你对 View 的绘制机制还不清楚，而且希望将来往更高级的方向发展，这一步一定会经历的，那么请你耐心看完，你可以分多次研读，过程中出现问题或者原文分析不到位的地方，欢迎 PR。
+
 当你掌握了这些基本的知识，你可以去研究 GitHub 上的一部分开源项目了（因为 Touch 事件这里介绍的不多，而很多项目和 Touch 事件相关）。
 
 **参考文献**
@@ -286,7 +301,7 @@ vpi_attrs.xml
 [http://developer.android.com/training/custom-views/create-view.html](http://developer.android.com/training/custom-views/create-view.html)
 [Google Android 官方培训课程中文版](https://github.com/kesenhoo/android-training-course-in-chinese)
 
-View 的绘制：
+View 的绘制
 [http://blog.csdn.net/wangjinyu501/article/details/9008271](http://blog.csdn.net/wangjinyu501/article/details/9008271)
 [http://blog.csdn.net/qinjuning/article/details/7110211](http://blog.csdn.net/qinjuning/article/details/7110211)
 [http://blog.csdn.net/qinjuning/article/details/8074262](http://blog.csdn.net/qinjuning/article/details/8074262)

@@ -1,6 +1,6 @@
 ## xUtils 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[xUtils](https://github.com/wyouflf/xUtils)，分析者：[Caij](https://github.com/Caij)，校对者：[maogy](https://github.com/maogy)
+项目：[xUtils](https://github.com/wyouflf/xUtils)，分析者：[Caij](https://github.com/Caij)，校对者：[maogy](https://github.com/maogy)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 xUtils 部分。
 > 项目地址：[xUtils](https://github.com/wyouflf/xUtils)，分析的版本：[192c2a886c](https://github.com/wyouflf/xUtils/commit/192c2a886c2d467e50718c6e469de63696f5cded)，Demo 地址：[xUtils Demo](https://github.com/android-cn/android-open-project-demo/tree/master/xutils-demo)
@@ -39,8 +39,8 @@ View 和各种事件的注入以及资源的注入。
 
 ###### (1)主要函数
 
-```
-    private static void injectObject(Object handler, ViewFinder finder)
+```java
+private static void injectObject(Object handler, ViewFinder finder)
 
 ```
 
@@ -55,17 +55,16 @@ View 和各种事件的注入以及资源的注入。
 
 ###### (1)主要函数
 
-```
-    public View findViewById(int id, int pid)
-    public View findViewById(int id)
-
+```java
+public View findViewById(int id, int pid)
+public View findViewById(int id)
 ```
 
 如果存在父 View， 优先从父 View 寻找，否则从当前的 View 或者 Activity 中寻找。
 
 ##### 3.ResLoader.java
 
-```
+```java
     public static Object loadRes(ResType type, Context context, int id)
 
 ```
@@ -76,7 +75,7 @@ View 和各种事件的注入以及资源的注入。
 
 事件的注入， 其中的设计是通过动态代理。
 
-```
+```java
 private final static DoubleKeyValueMap<ViewInjectInfo, Class<?>, Object> listenerCache =
             new DoubleKeyValueMap<ViewInjectInfo, Class<?>, Object>();
 
@@ -84,7 +83,7 @@ private final static DoubleKeyValueMap<ViewInjectInfo, Class<?>, Object> listene
 
 存放监听事件接口 map。 因为有些接口有多个函数， 代理会判断事件接口是否存在， 如果存在只增加代理方法就够了， 避免重新设置监听事件接口。
 
-```
+```java
 public static void addEventMethod(
             ViewFinder finder,
             ViewInjectInfo info,
@@ -116,14 +115,14 @@ public static void addEventMethod(
 
 主要功能数据库的创建，数据库的增删改查。
 
-```
+```java
     private static HashMap<String, DbUtils> daoMap = new HashMap<String, DbUtils>();
 
 ```
 
 存放 DbUtils 实例对象的 map，每个数据库对应一个实例， key 为数据库的名称。
 
-```
+```java
 private synchronized static DbUtils getInstance(DaoConfig daoConfig)
 
 ```
@@ -143,7 +142,7 @@ private synchronized static DbUtils getInstance(DaoConfig daoConfig)
 
 ##### 2.DaoConfig.java
 
-```
+```java
     private String dbName = "xUtils.db"; // default db name 数据库名称
     private int dbVersion = 1; //数据库版本
     private DbUpgradeListener dbUpgradeListener; //升级监听事件
@@ -156,7 +155,7 @@ private synchronized static DbUtils getInstance(DaoConfig daoConfig)
 
 在 DbUtils 的查询数据中
 
-```
+```java
     @SuppressWarnings("unchecked")
     public <T> List<T> findAll(Selector selector) throws DbException {
         ....
@@ -180,7 +179,7 @@ private synchronized static DbUtils getInstance(DaoConfig daoConfig)
 
 sql 建表、增删改语句的组合。
 
-```
+```java
 public static SqlInfo buildCreateTableSqlInfo(DbUtils db, Class<?> entityType)  
 public static SqlInfo buildDeleteSqlInfo(DbUtils db, Class<?> entityType, Object idValue)
 public static SqlInfo buildDeleteSqlInfo(DbUtils db, Class<?> entityType, WhereBuilder whereBuilder)
@@ -233,18 +232,18 @@ sql 条件语句的组合。
 
 支持异步同步访问网络数据， 断点下载文件。
 
-```
+```java
     //网络数据的缓存。
     public final static HttpCache sHttpCache = new HttpCache();
     //访问网络的 HttpClient。
-    private final DefaultHttpClient httpClient; 
+    private final DefaultHttpClient httpClient;
     private final HttpContext httpContext = new BasicHttpContext();
     //线程池。
     private final static PriorityExecutor EXECUTOR = new PriorityExecutor(DEFAULT_POOL_SIZE);
 
 ```
 
-```
+```java
 public HttpUtils(int connTimeout, String userAgent) {
         //配置超时时间，UserAgent， http 版本信息协议等一些信息
         .....
@@ -256,7 +255,7 @@ public HttpUtils(int connTimeout, String userAgent) {
         httpClient.addRequestInterceptor(new HttpRequestInterceptor() {
             @Override
             public void process(org.apache.http.HttpRequest httpRequest, HttpContext httpContext) throws org.apache.http.HttpException, IOException {
-                if (!httpRequest.containsHeader(HEADER_ACCEPT_ENCODING)) { 
+                if (!httpRequest.containsHeader(HEADER_ACCEPT_ENCODING)) {
                     httpRequest.addHeader(HEADER_ACCEPT_ENCODING, ENCODING_GZIP);
                 }
             }
@@ -274,7 +273,7 @@ public HttpUtils(int connTimeout, String userAgent) {
                     for (HeaderElement element : encoding.getElements()) {
                         if (element.getName().equalsIgnoreCase("gzip")) {
                             //这里判断从服务器传输的数据是否需要通过 gzip 解压。
-                            response.setEntity(new GZipDecompressingEntity(response.getEntity())); 
+                            response.setEntity(new GZipDecompressingEntity(response.getEntity()));
                             return;
                         }
                     }
@@ -285,7 +284,7 @@ public HttpUtils(int connTimeout, String userAgent) {
 
 ```
 
-```
+```java
     //访问网络数据
     private <T> HttpHandler<T> sendRequest(HttpRequest request, RequestParams params, RequestCallBack<T> callBack);
     //下载网络文件
@@ -341,13 +340,13 @@ public HttpUtils(int connTimeout, String userAgent) {
 
 图片的异步加载，支持本地和网络图片， 图片的压缩处理， 图片的内存缓存已经本地缓存。
 
-```
+```java
     private BitmapGlobalConfig globalConfig; // 线程池，缓存，和网络的配置
     private BitmapDisplayConfig defaultDisplayConfig; //图片显示的配置
 
 ```
 
-```
+```java
      /**
      * @param container 表示需要显示图片的 View
      * @param uri 图片的 uri
@@ -370,7 +369,7 @@ public HttpUtils(int connTimeout, String userAgent) {
 
 ##### 3.BitmapCache.java
 
-```
+```java
     private LruDiskCache mDiskLruCache; //闪存缓存
     private LruMemoryCache<MemoryCacheKey, Bitmap> mMemoryCache; //运存缓存
 
@@ -378,7 +377,7 @@ public HttpUtils(int connTimeout, String userAgent) {
 
 ##### (1)主要函数
 
-```
+```java
     //下载网络图片， 然后根据配置压缩图片， 将图片缓存。
     public Bitmap downloadBitmap(String uri, BitmapDisplayConfig config, final BitmapUtils.BitmapLoadTask<?> task)
     //从运存缓存中读取 bitmap 在获取的时候会判断是否过期
@@ -392,7 +391,7 @@ public HttpUtils(int connTimeout, String userAgent) {
 
 配置， 包括线程池， 缓存的大小。
 
-```
+```java
 //闪存缓存的路径
 private String diskCachePath;
 //运存缓存的最大值
@@ -412,7 +411,7 @@ private BitmapCache bitmapCache;
 
 ##### 5.BitmapDisplayConfig.java
 
-```
+```java
     //图片显示的大小
     private BitmapSize bitmapMaxSize;
     //图片的动画

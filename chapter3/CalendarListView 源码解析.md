@@ -1,6 +1,6 @@
 ## CalendarListView 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[CalendarListView](https://github.com/traex/CalendarListview)，分析者：[Rogary](http://github.com/Rogary)，校对者：[Trinea](https://github.com/Trinea)
+项目：[CalendarListView](https://github.com/traex/CalendarListview)，分析者：[Rogary](http://github.com/Rogary)，校对者：[Trinea](https://github.com/Trinea)
 
 > 本文为 [CalendarListView](http://a.codekk.com/) 中 CalanderListView 部分
 > 项目地址：[CalendarListView](https://github.com/traex/CalendarListview)，分析的版本：[063952b](https://github.com/traex/CalendarListview/commit/063952b3e6e109eebebebfceb52c8c2fc76c6844)，Demo 地址：[calendar-list-view-demo](https://github.com/aosp-exchange-group/android-open-project-demo/tree/master/calendar-list-view-demo)
@@ -34,21 +34,19 @@ dependencies {
 
 ### 1.3 **使用指南**
 
-> #### 1.在你的布局 XML 声明一个`DayPickerView`
->
-> \``` xml
+#### 1.在你的布局 XML 声明一个`DayPickerView`
 
-> \```
->
-> #### 2.在你的 Activity 或 Fragment 中引入`DatePickerController`,然后你需要设置 `getMaxYear`and >`onDayOfMonthSelected`.
->
-> `getMaxYear` 是设置选择器的最大年数
->
-> `onDayOfMonthSelected` 是当你选择了某个新日期时的回调
->
-> \``` java
+``` xml
 
 ```
+
+#### 2.在你的 Activity 或 Fragment 中引入`DatePickerController`,然后你需要设置 `getMaxYear`and >`onDayOfMonthSelected`.
+
+`getMaxYear` 是设置选择器的最大年数
+
+`onDayOfMonthSelected` 是当你选择了某个新日期时的回调
+
+```java
 @Override
 
 public int getMaxYear()
@@ -70,10 +68,6 @@ public void onDayOfMonthSelected(int year, int month, int day)
 }
 
 ```
-
-> \```
-
-------
 
 ### 1.4 如何定制
 
@@ -101,28 +95,26 @@ public void onDayOfMonthSelected(int year, int month, int day)
 ### 2.1 类详细介绍
 
 > #### 1.[`DayPickerView`](https://github.com/traex/CalendarListview/blob/master/library/src/main/java/com/andexert/calendarlistview/library/DayPickerView.java)
->
-> > `DayPickerView` 继承于`RecyclerView`
-> >
-> > > [RecyclerView](http://blog.jobbole.com/74208/)相关知识
-> > >
-> > > 在这里 DayPickerView 作为整个 Calendar—list-view 的容器
-> > >
-> > > 目前 SDK 中提供了三种自带的 LayoutManager:
-> > >
-> > > LinearLayoutManager
-> > >
-> > > GridLayoutManager
-> > >
-> > > StaggeredGridLayoutManager
-> > >
-> > > 这里用到了 LinearLayoutManager
-> > >
-> > > LinearLayoutManager 可设置方向，这里使用默认的竖向
-> > >
-> > > **(1) 主要成员变量含义**
-> >
-> > \>
+
+`DayPickerView` 继承于`RecyclerView`
+
+ [RecyclerView](http://blog.jobbole.com/74208/)相关知识
+
+ 在这里 DayPickerView 作为整个 Calendar—list-view 的容器
+
+ 目前 SDK 中提供了三种自带的 LayoutManager:
+
+ LinearLayoutManager
+
+ GridLayoutManager
+
+ StaggeredGridLayoutManager
+
+ 这里用到了 LinearLayoutManager
+
+ LinearLayoutManager 可设置方向，这里使用默认的竖向
+
+ **(1) 主要成员变量含义**
 
 1.`mCurrentScrollState` 当前滑动状态
 
@@ -234,7 +226,9 @@ public void onDayOfMonthSelected(int year, int month, int day)
 > > [View 绘制流程相关知识](http://a.codekk.com/detail/Android/lightSky/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20View%20%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B)
 > >
 > > **View 绘制流程函数调用链**
-> > ![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tech/viewdrawflow/image/view_draw_method_chain.png) 图片来自 [https://plus.google.com/+ArpitMathur/posts/cT1EuBbxEgN](https://plus.google.com/+ArpitMathur/posts/cT1EuBbxEgN)
+> > ![img](../assets/view_draw_method_chain.png) 
+> >
+> > 图片来自 [https://plus.google.com/+ArpitMathur/posts/cT1EuBbxEgN](https://plus.google.com/+ArpitMathur/posts/cT1EuBbxEgN)
 > >
 > > **(1) 主要成员变量含义**
 > >

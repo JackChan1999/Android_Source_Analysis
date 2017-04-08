@@ -1,6 +1,6 @@
 ## HoloGraphLibrary 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[HoloGraphLibrary](https://github.com/Androguide/HoloGraphLibrary)，分析者：[AaronPlay](https://github.com/AaronPlay)，校对者：[lightSky](https://github.com/lightSky)
+项目：[HoloGraphLibrary](https://github.com/Androguide/HoloGraphLibrary)，分析者：[AaronPlay](https://github.com/AaronPlay)，校对者：[lightSky](https://github.com/lightSky)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 HoloGraphLibrary 部分
 > 项目地址：[HoloGraphLibrary](https://github.com/Androguide/HoloGraphLibrary)，分析的版本：[028cd2a](https://github.com/Androguide/HoloGraphLibrary/commit/028cd2ae6916308bbb96472aafa9ecd8b1343d5c)，Demo 地址：[HoloGraphLibrary Demo](https://github.com/android-cn/android-open-project-demo/tree/master/holo-graph-library-demo)

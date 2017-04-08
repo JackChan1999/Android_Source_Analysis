@@ -1,6 +1,6 @@
 ## EventBus 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[EventBus](https://github.com/greenrobot/EventBus)，分析者：[Trinea](https://github.com/trinea)，校对者：[扔物线](https://github.com/rengwuxian)
+项目：[EventBus](https://github.com/greenrobot/EventBus)，分析者：[Trinea](https://github.com/trinea)，校对者：[扔物线](https://github.com/rengwuxian)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 EventBus 部分
 > 项目地址：[EventBus](https://github.com/greenrobot/EventBus)，分析的版本：[ccc2771](https://github.com/greenrobot/EventBus/commit/ccc2771199f958a34bd4ea6c90d0a8c671c2e70a)，Demo 地址：[EventBus Demo](https://github.com/android-cn/android-open-project-demo/tree/master/event-bus-demo)
@@ -82,47 +82,52 @@ postSingleEventForEventType 函数在`subscriptionsByEventType`查找该事件�
 postToSubscription 函数中会判断订阅者的 ThreadMode，从而决定在什么 Mode 下执行事件响应函数。ThreadMode 共有四类：
 
 1. `PostThread`：默认的 ThreadMode，表示在执行 Post 操作的线程直接调用订阅者的事件响应方法，不论该线程是否为主线程（UI 线程）。当该线程为主线程时，响应方法中不能有耗时操作，否则有卡主线程的风险。适用场景：**对于是否在主线程执行无要求，但若 Post 线程为主线程，不能耗时的操作**；
+
 2. `MainThread`：在主线程中执行响应方法。如果发布线程就是主线程，则直接调用订阅者的事件响应方法，否则通过主线程的 Handler 发送消息在主线程中处理——调用订阅者的事件响应函数。显然，`MainThread`类的方法也不能有耗时操作，以避免卡主线程。适用场景：**必须在主线程执行的操作**；
+
 3. `BackgroundThread`：在后台线程中执行响应方法。如果发布线程**不是**主线程，则直接调用订阅者的事件响应函数，否则启动**唯一的**后台线程去处理。由于后台线程是唯一的，当事件超过一个的时候，它们会被放在队列中依次执行，因此该类响应方法虽然没有`PostThread`类和`MainThread`类方法对性能敏感，但最好不要有重度耗时的操作或太频繁的轻度耗时操作，以造成其他操作等待。适用场景：*操作轻微耗时且不会过于频繁*，即一般的耗时操作都可以放在这里；
+
 4. `Async`：不论发布线程是否为主线程，都使用一个空闲线程来处理。和`BackgroundThread`不同的是，`Async`类的所有线程是相互独立的，因此不会出现卡线程的问题。适用场景：*长耗时操作，例如网络访问*。
 
 **(4) 主要成员变量含义**
-1.`defaultInstance`默认的 EventBus 实例，根据`EventBus.getDefault()`函数得到。
-2.`DEFAULT_BUILDER`默认的 EventBus Builder。
-3.`eventTypesCache`事件对应类型及其父类和实现的接口的缓存，以 eventType 为 key，元素为 Object 的 ArrayList 为 Value，Object 对象为 eventType 的父类或接口。 4.`subscriptionsByEventType`事件订阅者的保存队列，以 eventType 为 key，元素为`Subscription`的 ArrayList 为 Value，其中`Subscription`为订阅者信息，由 subscriber, subscriberMethod, priority 构成。
-5.`typesBySubscriber`订阅者订阅的事件的保存队列，以 subscriber 为 key，元素为 eventType 的 ArrayList 为 Value。
-6.`stickyEvents`Sticky 事件保存队列，以 eventType 为 key，event 为元素，由此可以看出对于同一个 eventType 最多只会有一个 event 存在。
-7.`currentPostingThreadState`当前线程的 post 信息，包括事件队列、是否正在分发中、是否在主线程、订阅者信息、事件实例、是否取消。
-8.`mainThreadPoster`、`backgroundPoster`、`asyncPoster`事件主线程处理者、事件 Background 处理者、事件异步处理者。
-9.`subscriberMethodFinder`订阅者响应函数信息存储和查找类。
-10.`executorService`异步和 BackGround 处理方式的线程池。
-11.`throwSubscriberException`当调用事件处理函数异常时是否抛出异常，默认为 false，建议通过
 
-```
+1. `defaultInstance`默认的 EventBus 实例，根据`EventBus.getDefault()`函数得到。
+2. `DEFAULT_BUILDER`默认的 EventBus Builder。
+3. `eventTypesCache`事件对应类型及其父类和实现的接口的缓存，以 eventType 为 key，元素为 Object 的 ArrayList 为 Value，Object 对象为 eventType 的父类或接口。
+4. `subscriptionsByEventType`事件订阅者的保存队列，以 eventType 为 key，元素为`Subscription`的 ArrayList 为 Value，其中`Subscription`为订阅者信息，由 subscriber, subscriberMethod, priority 构成。
+5. `typesBySubscriber`订阅者订阅的事件的保存队列，以 subscriber 为 key，元素为 eventType 的 ArrayList 为 Value。
+6. `stickyEvents`Sticky 事件保存队列，以 eventType 为 key，event 为元素，由此可以看出对于同一个 eventType 最多只会有一个 event 存在。
+7. `currentPostingThreadState`当前线程的 post 信息，包括事件队列、是否正在分发中、是否在主线程、订阅者信息、事件实例、是否取消。
+8. `mainThreadPoster`、`backgroundPoster`、`asyncPoster`事件主线程处理者、事件 Background 处理者、事件异步处理者。
+9. `subscriberMethodFinder`订阅者响应函数信息存储和查找类。
+10. `executorService`异步和 BackGround 处理方式的线程池。
+11. `throwSubscriberException`当调用事件处理函数异常时是否抛出异常，默认为 false，建议通过
+
+```java
 EventBus.builder().throwSubscriberException(true).installDefaultEventBus()
 
 ```
 
 打开。
-12.`logSubscriberExceptions`当调用事件处理函数异常时是否打印异常信息，默认为 true。
-13.`logNoSubscriberMessages`当没有订阅者订阅该事件时是否打印日志，默认为 true。
-14.`sendSubscriberExceptionEvent`当调用事件处理函数异常时是否发送 SubscriberExceptionEvent 事件，若此开关打开，订阅者可通过
+12. `logSubscriberExceptions`当调用事件处理函数异常时是否打印异常信息，默认为 true。
+13. `logNoSubscriberMessages`当没有订阅者订阅该事件时是否打印日志，默认为 true。
+14. `sendSubscriberExceptionEvent`当调用事件处理函数异常时是否发送 SubscriberExceptionEvent 事件，若此开关打开，订阅者可通过
 
-```
+```java
 public void onEvent(SubscriberExceptionEvent event)
 
 ```
 
 订阅该事件进行处理，默认为 true。
-15.`sendNoSubscriberEvent`当没有事件处理函数对事件处理时是否发送 NoSubscriberEvent 事件，若此开关打开，订阅者可通过
+15. `sendNoSubscriberEvent`当没有事件处理函数对事件处理时是否发送 NoSubscriberEvent 事件，若此开关打开，订阅者可通过
 
-```
+```java
 public void onEvent(NoSubscriberEvent event)
 
 ```
 
 订阅该事件进行处理，默认为 true。
-16.`eventInheritance`是否支持事件继承，默认为 true。
+16. `eventInheritance`是否支持事件继承，默认为 true。
 
 ##### 4.2.2 EventBusBuilder.java
 
@@ -130,19 +135,19 @@ public void onEvent(NoSubscriberEvent event)
 
 ##### 4.2.3 SubscriberMethodFinder.java
 
-订阅者响应函数信息存储和查找类，由 HashMap 缓存，以 ${subscriberClassName} 为 key，SubscriberMethod 对象为元素的 ArrayList 为 value。findSubscriberMethods 函数用于查找订阅者响应函数，如果不在缓存中，则遍历自己的每个函数并递归父类查找，查找成功后保存到缓存中。遍历及查找规则为：
-a. 遍历 subscriberClass 每个方法；
-b. 该方法不以`java.`、`javax.`、`android.`这些 SDK 函数开头，并以`onEvent`开头，表示可能是事件响应函数继续，否则检查下一个方法；
-c. 该方法是否是 public 的，并且不是 ABSTRACT、STATIC、BRIDGE、SYNTHETIC 修饰的，满足条件则继续。其中 BRIDGE、SYNTHETIC 为编译器生成的一些函数修饰符；
-d. 该方法是否只有 1 个参数，满足条件则继续；
-e. 该方法名为 `onEvent` 则 threadMode 为`ThreadMode.PostThread`；
-该方法名为 `onEventMainThread` 则 threadMode 为`ThreadMode.MainThread`；
-该方法名为 `onEventBackgroundThread` 则 threadMode 为`ThreadMode.BackgroundThread`；
-该方法名为 `onEventAsync` 则 threadMode 为`ThreadMode.Async`；
-其他情况且不在忽略名单 (skipMethodVerificationForClasses) 中则抛出异常。
-f. 得到该方法唯一的参数即事件类型 eventType，将这个方法、threadMode、eventType 一起构造 SubscriberMethod 对象放到 ArrayList 中。
-g. 回到 b 遍历 subscriberClass 的下一个方法，若方法遍历结束到 h；
-h. 回到 a 遍历自己的父类，若父类遍历结束回到 i；
+订阅者响应函数信息存储和查找类，由 HashMap 缓存，以 ${subscriberClassName} 为 key，SubscriberMethod 对象为元素的 ArrayList 为 value。findSubscriberMethods 函数用于查找订阅者响应函数，如果不在缓存中，则遍历自己的每个函数并递归父类查找，查找成功后保存到缓存中。遍历及查找规则为：   
+a. 遍历 subscriberClass 每个方法；   
+b. 该方法不以`java.`、`javax.`、`android.`这些 SDK 函数开头，并以`onEvent`开头，表示可能是事件响应函数继续，否则检查下一个方法；   
+c. 该方法是否是 public 的，并且不是 ABSTRACT、STATIC、BRIDGE、SYNTHETIC 修饰的，满足条件则继续。其中 BRIDGE、SYNTHETIC 为编译器生成的一些函数修饰符；    
+d. 该方法是否只有 1 个参数，满足条件则继续；   
+e. 该方法名为 `onEvent` 则 threadMode 为`ThreadMode.PostThread`；   
+该方法名为 `onEventMainThread` 则 threadMode 为`ThreadMode.MainThread`；    
+该方法名为 `onEventBackgroundThread` 则 threadMode 为`ThreadMode.BackgroundThread`；    
+该方法名为 `onEventAsync` 则 threadMode 为`ThreadMode.Async`；    
+其他情况且不在忽略名单 (skipMethodVerificationForClasses) 中则抛出异常。    
+f. 得到该方法唯一的参数即事件类型 eventType，将这个方法、threadMode、eventType 一起构造 SubscriberMethod 对象放到 ArrayList 中。   
+g. 回到 b 遍历 subscriberClass 的下一个方法，若方法遍历结束到 h；   
+h. 回到 a 遍历自己的父类，若父类遍历结束回到 i；    
 i. 若 ArrayList 依然为空则抛出异常，否则会将 ArrayList 做为 value，${subscriberClassName} 做为 key 放到缓存 HashMap 中。 对于事件函数的查找有两个小的性能优化点：
 
 ```

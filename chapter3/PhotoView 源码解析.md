@@ -1,6 +1,6 @@
 ## PhotoView 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[PhotoView](https://github.com/chrisbanes/PhotoView)，分析者：[dkmeteor](https://github.com/dkmeteor)，校对者：[cpacm](https://github.com/cpacm)
+项目：[PhotoView](https://github.com/chrisbanes/PhotoView)，分析者：[dkmeteor](https://github.com/dkmeteor)，校对者：[cpacm](https://github.com/cpacm)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 PhotoView 部分
 > 项目地址：[PhotoView](https://github.com/chrisbanes/PhotoView)，分析的版本：[48427bf](https://github.com/chrisbanes/PhotoView/commit/48427bff9bb1a408cfebf6697aa019c0788ded76)，Demo 地址：[PhotoView-demo](https://github.com/android-cn/android-open-project-demo/tree/master/photoview-demo)
@@ -25,7 +25,7 @@
 
 ## 2. 总体设计
 
-PhotoView 这个库实际上比较简单,关键点其实就是 Touch 事件处理和 Matrix 图形变换的应用.
+PhotoView 这个库实际上比较简单，关键点其实就是 Touch 事件处理和 Matrix 图形变换的应用.
 
 ### 2.1 TouchEvent 及手势事件处理
 
@@ -35,7 +35,7 @@ PhotoView 这个库实际上比较简单,关键点其实就是 Touch 事件处�
 
 ### 2.2 Matrix
 
-由于 Matrix 是 Android 系统源生 API,很多开发者对此都比较熟悉,为了不影响阅读效果，故不在此详细叙述,如果对其不是很了解,可以查看本文档末尾的 Matrix 补充说明
+由于 Matrix 是 Android 系统源生 API,很多开发者对此都比较熟悉，为了不影响阅读效果，故不在此详细叙述,如果对其不是很了解,可以查看本文档末尾的 Matrix 补充说明
 
 ## 3. 流程图
 

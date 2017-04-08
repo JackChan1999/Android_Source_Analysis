@@ -1,6 +1,6 @@
 ## Cling 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[cling](https://github.com/4thline/cling)，分析者：[kevinshine](https://github.com/kevinshine)，校对者：[Trinea](https://github.com/Trinea)
+项目：[cling](https://github.com/4thline/cling)，分析者：[kevinshine](https://github.com/kevinshine)，校对者：[Trinea](https://github.com/Trinea)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 Cling 部分
 > 项目地址：[cling](https://github.com/4thline/cling)，分析的版本：[5fd60eb](https://github.com/4thline/cling/commit/5fd60eb9e2e87f2ae6d1cf049145c4187040518c)，Demo 地址：[BeyondUPnP](https://github.com/kevinshine/BeyondUPnP)

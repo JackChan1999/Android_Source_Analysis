@@ -1,6 +1,6 @@
 ## Volley 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[Volley](https://android.googlesource.com/platform/frameworks/volley/)，分析者：[grumoon](https://github.com/grumoon)，校对者：[Trinea](https://github.com/Trinea)
+项目：[Volley](https://android.googlesource.com/platform/frameworks/volley/)，分析者：[grumoon](https://github.com/grumoon)，校对者：[Trinea](https://github.com/Trinea)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 Volley 部分
 > 项目地址：[Volley](https://android.googlesource.com/platform/frameworks/volley/)，分析的版本：[35ce778](https://android.googlesource.com/platform/frameworks/volley/+/35ce77836d8e1e951b8e4b2ec43e07fb7336dab6)，Demo 地址：[Volley Demo](https://github.com/android-cn/android-open-project-demo/tree/master/volley-demo)
@@ -12,8 +12,9 @@
 
 Volley 是 Google 推出的 Android 异步网络请求框架和图片加载框架。在 Google I/O 2013 大会上发布。
 
-> 名字由来：a burst or emission of many things or a large amount at once
-> 发布演讲时候的配图
+> 名字由来：a burst or emission of many things or a large amount at once   
+
+发布演讲时候的配图
 
 ![Volley](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/network/volley/image/volley.png)
 
@@ -31,6 +32,7 @@ Volley 是 Google 推出的 Android 异步网络请求框架和图片加载框�
 #### 2.1 总体设计图
 
 ![总体设计图](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/network/volley/image/design.png)
+
 上面是 Volley 的总体设计图，主要是通过两种`Dispatch Thread`不断从`RequestQueue`中取出请求，根据是否已缓存调用`Cache`或`Network`这两类数据获取接口之一，从内存缓存或是服务器取得请求的数据，然后交由`ResponseDelivery`去做结果分发及回调处理。
 
 #### 2.2 Volley 中的概念

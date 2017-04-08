@@ -1,6 +1,6 @@
 ## BaseAdapterHelper 源码分析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[BaseAdapterHelper](https://github.com/JoanZapata/base-adapter-helper)，分析者：[hongyangAndroid](https://github.com/hongyangAndroid)，校对者：[zhengtao620](https://github.com/zhengtao620)
+项目：[BaseAdapterHelper](https://github.com/JoanZapata/base-adapter-helper)，分析者：[hongyangAndroid](https://github.com/hongyangAndroid)，校对者：[zhengtao620](https://github.com/zhengtao620)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 BaseAdapterHelper 部分
 > 项目地址：[BaseAdapterHelper](https://github.com/JoanZapata/base-adapter-helper)，分析的版本：[71b7ae2](https://github.com/JoanZapata/base-adapter-helper/commit/71b7ae2414f01dc4d43429586196e9e9735c77aa)，Demo 地址：[base-adapter-helper Demo](https://github.com/aosp-exchange-group/android-open-project-demo/tree/master/base-adapter-helper-demo)
@@ -395,7 +395,7 @@ public int getItemViewType(int position) {
     if (position >= data.size()) {
         return 0;
     }
-    return (mMultiItemSupport != null) ? 
+    return (mMultiItemSupport != null) ?
         mMultiItemSupport.getItemViewType(position, data.get(position)) : 1;
 }
 

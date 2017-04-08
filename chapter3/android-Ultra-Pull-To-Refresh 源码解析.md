@@ -1,6 +1,6 @@
 ## android-Ultra-Pull-To-Refresh 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[android-Ultra-Pull-To-Refresh](https://github.com/liaohuqiu/android-Ultra-Pull-To-Refresh)，分析者：[Grumoon](https://github.com/grumoon)，校对者：[lightSky](https://github.com/lightSky)
+项目：[android-Ultra-Pull-To-Refresh](https://github.com/liaohuqiu/android-Ultra-Pull-To-Refresh)，分析者：[Grumoon](https://github.com/grumoon)，校对者：[lightSky](https://github.com/lightSky)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 android-Ultra-Pull-To-Refresh 部分   
 项目地址：[android-Ultra-Pull-To-Refresh](https://github.com/liaohuqiu/android-Ultra-Pull-To-Refresh)，   
@@ -219,18 +219,21 @@ public void onUIPositionChange(PtrFrameLayout frame, boolean isUnderTouch, byte 
 #### 4.1.5 PtrFrameLayout.java
 
 UltraPTR 的核心类，自定义控件类。
-作为自定义控件， UltraPTR 有 8 个自定义属性。
-`ptr_header`，设置头部 id。
-`ptr_content`，设置内容 id。
-`ptr_resistance`，阻尼系数，默认: `1.7f`，越大，感觉下拉时越吃力。
-`ptr_ratio_of_header_height_to_refresh`，触发刷新时移动的位置比例，默认，`1.2f`，移动达到头部高度 1.2 倍时可触发刷新操作。
-`ptr_duration_to_close`，回弹延时，默认 `200ms`，回弹到刷新高度所用时间。
-`ptr_duration_to_close_header`，头部回弹时间，默认 `1000ms`。
-`ptr_pull_to_fresh`，刷新是否保持头部，默认值 `true`。
-`ptr_keep_header_when_refresh`，下拉刷新 / 释放刷新，默认为释放刷新。
+作为自定义控件， UltraPTR 有 8 个自定义属性。   
+
+  - `ptr_header`，设置头部 id
+  - `ptr_content`，设置内容 id
+  - `ptr_resistance`，阻尼系数，默认: `1.7f`，越大，感觉下拉时越吃力
+  - `ptr_ratio_of_header_height_to_refresh`，触发刷新时移动的位置比例，默认，`1.2f`，移动达到头部高度 1.2 倍时可触发刷新操作。
+  - `ptr_duration_to_close`，回弹延时，默认 `200ms`，回弹到刷新高度所用时间
+  - `ptr_duration_to_close_header`，头部回弹时间，默认 `1000ms`
+  - `ptr_pull_to_fresh`，刷新是否保持头部，默认值 `true`
+  - `ptr_keep_header_when_refresh`，下拉刷新 / 释放刷新，默认为释放刷新
 
 下面从 **显示** 和 **行为** 两个方面分析此类。
+
 **（1）显示（ View 绘制）**
+
 参考技术点，[公共技术点之 View 绘制流程](http://a.codekk.com/detail/Android/lightSky/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20View%20%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B)
 
 ```java
@@ -273,6 +276,7 @@ protected void onLayout(boolean flag, int i, int j, int k, int l) {...}
 
 PtrFrameLayout 继承 ViewGroup，继承 ViewGroup 必须重写 onLayout 方法来确定子 View 的位置。
 PtrFrameLayout 只有两个子 View。
+
 对于 Header
 
 ```java
@@ -289,23 +293,33 @@ final int top = paddingTop + lp.topMargin + offsetX;
 代码中有个 `offsetX` 变量（我认为改为 `offsetY` 好些），初始时为 0，随着下拉的过程， `offsetX` 会逐渐增大，这样 Header 和 Content 都会向下移动， Header 会显示出来，出现下拉的位置移动效果。
 
 **（2）行为（ View 事件）**
+
 参考技术点，[公共技术点之 View 事件传递](http://a.codekk.com/detail/Android/Trinea/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20View%20%E4%BA%8B%E4%BB%B6%E4%BC%A0%E9%80%92)
+
 ViewGroup 的事件处理，通常重写 onInterceptTouchEvent 方法或者 dispatchTouchEvent 方法，PtrFrameLayout 重写了 dispatchTouchEvent 方法。
+
 **事件处理流程图** 如下：
 ![UltraPTR-dispatchTouchEvent-flow-chart](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/view/other/android-ultra-pull-to-refresh/image/UltraPTR-dispatchTouchEvent-flow-chart.png)
+
 以上有两点需要分析下
 
-> 1. ACTION_UP 或者 ACTION_CANCEL 时候执行的 onRelease 方法。
->    **功能上**，通过执行 `tryToPerformRefresh` 方法，如果向下拉动的位移已经超过了触发下拉刷新的偏移量 `mOffsetToRefresh`，并且当前状态是 PTR_STATUS_PREPARE，执行刷新功能回调。
->    **行为上**，如果没有达到触发刷新的偏移量，或者当前状态为 PTR_STATUS_COMPLETE，或者刷新过程中不保持头部位置，则执行向上的位置回复动作。
-> 2. ACTION_MOVE 中判断是否可以纵向 move。
->    ACTION_MOVE 的方向**向下**，如果 `mPtrHandler` 不为空，并且 `mPtrHandler.checkCanDoRefresh` 返回值为 true，则可以移动， Header 和 Content 向下移动，否则，事件交由父类处理。
->    ACTION_MOVE 的方向**向上**，如果当前位置大于起始位置，则可以移动，Header 和 Content 向上移动，否则，事件交由父类处理。
+1. ACTION_UP 或者 ACTION_CANCEL 时候执行的 onRelease 方法。
+
+**功能上**，通过执行 `tryToPerformRefresh` 方法，如果向下拉动的位移已经超过了触发下拉刷新的偏移量 `mOffsetToRefresh`，并且当前状态是 PTR_STATUS_PREPARE，执行刷新功能回调。
+
+**行为上**，如果没有达到触发刷新的偏移量，或者当前状态为 PTR_STATUS_COMPLETE，或者刷新过程中不保持头部位置，则执行向上的位置回复动作。
+
+2. ACTION_MOVE 中判断是否可以纵向 move。
+
+ACTION_MOVE 的方向**向下**，如果 `mPtrHandler` 不为空，并且 `mPtrHandler.checkCanDoRefresh` 返回值为 true，则可以移动， Header 和 Content 向下移动，否则，事件交由父类处理。
+
+ACTION_MOVE 的方向**向上**，如果当前位置大于起始位置，则可以移动，Header 和 Content 向上移动，否则，事件交由父类处理。
 
 #### 4.1.6 PtrClassicDefaultHeader.java
 
 经典下拉刷新的头部实现
 ![default-header](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/view/other/android-ultra-pull-to-refresh/image/default-header.gif)
+
 PtrClassicDefaultHeader 实现了 PtrUIHandler 接口。
 经典样式的 Header 实现，可以作为我们实现自定义 Header 的参考，以下是具体实现。
 

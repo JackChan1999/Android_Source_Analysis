@@ -1,6 +1,6 @@
 ## Side Menu.Android 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[Side Menu.Android](https://github.com/Yalantis/Side-Menu.Android)，分析者：[cpacm](https://github.com/cpacm)，校对者：[lightSky](https://github.com/lightSky)
+项目：[Side Menu.Android](https://github.com/Yalantis/Side-Menu.Android)，分析者：[cpacm](https://github.com/cpacm)，校对者：[lightSky](https://github.com/lightSky)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 Side Menu.Android 部分
 > 项目地址：[Side Menu.Android](https://github.com/Yalantis/Side-Menu.Android)，分析的版本：[2c23bff](https://github.com/Yalantis/Side-Menu.Android/commit/2c23bff1dbebb87b3a3291e3f7d629cc0d5efbfa)，Demo 地址：[side-menu-demo](https://github.com/aosp-exchange-group/android-open-project-demo/tree/master/side-menu-demo)

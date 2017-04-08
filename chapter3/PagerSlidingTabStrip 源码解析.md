@@ -1,6 +1,6 @@
 ## PagerSlidingTabStrip 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[PagerSlidingTabStrip](https://github.com/astuetz/PagerSlidingTabStrip)，分析者：[ayyb1988](https://github.com/ayyb1988)，校对者：[Trinea](https://github.com/Trinea)
+项目：[PagerSlidingTabStrip](https://github.com/astuetz/PagerSlidingTabStrip)，分析者：[ayyb1988](https://github.com/ayyb1988)，校对者：[Trinea](https://github.com/Trinea)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 PagerSlidingTabStrip 部分
 > 项目地址：[PagerSlidingTabStrip](https://github.com/astuetz/PagerSlidingTabStrip)，分析的版本：[3f4738e](https://github.com/astuetz/PagerSlidingTabStrip/commit/3f4738eca833faeca563d93cd77c8df763a45fb6)，Demo 地址：[PagerSlidingTabStrip Demo](https://github.com/aosp-exchange-group/android-open-project-demo/tree/master/pager-sliding-tab-strip-demo-ayyb1988)
@@ -26,9 +26,7 @@ pagerSlidingTabStrip 实现联动效果的原理是，它引用了 ViewPager 的
 
 #### 3.2 集成及使用指南
 
-##### 3.2.1
-
-在 gradle 中
+在 gradle 中引入依赖
 
 ```java
 dependencies {
@@ -36,7 +34,7 @@ dependencies {
 }
 ```
 
-##### 3.2.2 在 layout 布局文件中引入 PagerSlidingTabStrip，通常布局在 viewpager 上面。如下：
+在 layout 布局文件中引入 PagerSlidingTabStrip，通常布局在 viewpager 上面。如下：
 
 ```java
 <com.astuetz.PagerSlidingTabStrip
@@ -45,7 +43,7 @@ dependencies {
     android:layout_height="48dip" />
 ```
 
-##### 3.2.3 在 oncreate 方法中（或 Fragment 的 onCreateView）中，绑定 PagerSlidingTabStrip 到 Viewpager
+在 oncreate 方法中（或 Fragment 的 onCreateView）中，绑定 PagerSlidingTabStrip 到 Viewpager
 
 ```java
  // 初始化 ViewPager 和 Adapter
@@ -57,16 +55,14 @@ dependencies {
  tabs.setViewPager(pager);
 ```
 
-##### 3.2.4 如果你的 view pager 使用到 OnPageChangeListener。你应该通过这个 PagerSlidingTabStrip 控件设置而不是 Viewpager。如下：
+如果你的 view pager 使用到 OnPageChangeListener。你应该通过这个 PagerSlidingTabStrip 控件设置而不是 Viewpager。如下：
 
 ```java
      // continued from above
      tabs.setOnPageChangeListener(mPageChangeListener);
 ```
 
-#### 3.3 用户定制
-
-根据你的需要修改下面的值
+用户定制，根据你的需要修改下面的值
 
 - `pstsIndicatorColor` 滑动指示器的颜色
 - `pstsUnderlineColor` 整个 view【PagerSlidingTabStrip】下划线的颜色
@@ -214,8 +210,6 @@ for (int i = 0; i < tabCount; i++) {
         }
 ```
 
-### 
-
 ### 5. 杂谈
 
 该库有很好的自定义性和扩展性。比如修改滑动指示器为一张图片【目前为设定颜色值和高度来决定】
@@ -224,7 +218,7 @@ for (int i = 0; i < tabCount; i++) {
 
 [ViewPagerindicator 源码解析](http://a.codekk.com/detail/Android/lightSky/ViewPagerindicator%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90)
 
-#### View 的绘制：
+#### View 的绘制
 
 1. [How Android Draws Views](http://developer.android.com/guide/topics/ui/how-android-draws.html)
 2. [View 绘制流程](http://a.codekk.com/detail/Android/lightSky/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20View%20%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B)

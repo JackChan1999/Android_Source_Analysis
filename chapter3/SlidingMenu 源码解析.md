@@ -1,12 +1,12 @@
 ## SlidingMenu 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[SlidingMenu](https://github.com/jfeinstein10/SlidingMenu)，分析者：[huxian99](https://github.com/huxian99)，校对者：[Trinea](https://github.com/Trinea)
+项目：[SlidingMenu](https://github.com/jfeinstein10/SlidingMenu)，分析者：[huxian99](https://github.com/huxian99)，校对者：[Trinea](https://github.com/Trinea)
 
-> 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 SlidingMenu 部分
-> 项目地址：[SlidingMenu](https://github.com/jfeinstein10/SlidingMenu)，分析的版本：[4254fec](https://github.com/jfeinstein10/SlidingMenu/commit/4254feca3ece9397cd501921ee733f19ea0fdad8)，Demo 地址：[SlidingMenu Demo](https://github.com/aosp-exchange-group/android-open-project-demo/tree/master/sliding-menu-demo)
+> 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 SlidingMenu 部分  
+> 项目地址：[SlidingMenu](https://github.com/jfeinstein10/SlidingMenu)，  分析的版本：[4254fec](https://github.com/jfeinstein10/SlidingMenu/commit/4254feca3ece9397cd501921ee733f19ea0fdad8)，  Demo 地址：[SlidingMenu Demo](https://github.com/aosp-exchange-group/android-open-project-demo/tree/master/sliding-menu-demo)
 > 分析者：[huxian99](https://github.com/huxian99)，分析状态：完成，校对者：[Trinea](https://github.com/trinea)，校对状态：进行中
 
-### 1. 功能介绍
+## 1. 功能介绍
 
 现在主流 App 的导航栏一般有两种，一种是主界面上面 3－4 个 Tab 下面搭配 ViewPager + Fragment，另一种就是侧边栏，如果主导航超过 3 个 Tab 时，建议使用侧边栏作为 App 的主导航。
 SlidingMenu 是一个强大的侧边栏导航框架，并且已经被一些比较牛的 App 使用，主要特点如下：
@@ -15,11 +15,11 @@ SlidingMenu 是一个强大的侧边栏导航框架，并且已经被一些比�
 - 使用简单方便，支持左滑和右滑等
 - 自定义侧边栏显示动画
 
-### 2. 总体设计
+## 2. 总体设计
 
 SlidingMenu 总体由三个主要的类组成。
 
-- SlidingMenu 继承自 RelativeLayout，对外暴露 API 给用户，同时在添加 CustomViewAbove 和 CustomViewBehind
+- SlidingMenu 继承自 RelativeLayout，对外暴露 API 给用户，同时再添加 CustomViewAbove 和 CustomViewBehind
 - CustomViewAbove 继承自 ViewGroup，主要用来处理`触摸屏事件`
 - CustomViewBehind 继承自 ViewGroup，主要用来`配置参数`，`显示侧边栏的 Menu 部分`
 
@@ -27,9 +27,9 @@ SlidingMenu 总体由三个主要的类组成。
 
 请参考 `4.2.2 CustomViewAbove 事件处理流程图`
 
-### 4. 详细设计
+## 4. 详细设计
 
-#### 4.1 类关系图
+### 4.1 类关系图
 
 ![alt tex](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/view/menu/sliding-menu/image/SlidingMenu.png)
 
@@ -58,8 +58,8 @@ public void attachToActivity(Activity activity, int slideStyle, boolean actionba
 }
 ```
 
-> 这里 slideStyle 选取 SLIDING_WINDOW 的 case 进行分析，可以看到主要是获取 decorView，将 decorView 下面的 decorChild(我们的根布局)移除，把 SlidingMenu 添加进来，把 decorChild 赋值给 mViewAbove。
-> (SLIDING_CONTENT 原理差不多)
+这里 slideStyle 选取 SLIDING_WINDOW 的 case 进行分析，可以看到主要是获取 decorView，将 decorView 下面的 decorChild(我们的根布局)移除，把 SlidingMenu 添加进来，把 decorChild 赋值给 mViewAbove。
+(SLIDING_CONTENT 原理差不多)
 
 SlidingMenu 常用的属性设置：
 
@@ -176,7 +176,7 @@ public void drawShadow(View content, Canvas canvas)
 public void drawFade(View content, Canvas canvas, float openPercent)
 ```
 
-### 5. 杂谈
+## 5. 杂谈
 
 关于 selector drawable 存在的一些不理解 SlidingMenu 暴露几个关于 selector drawable 的 API 给用户, CustomViewBehind 的 drawSelector 方法具体实现如下：
 

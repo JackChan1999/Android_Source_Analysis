@@ -1,6 +1,6 @@
 ## Dagger 源码解析
 
-![收藏](http://a.codekk.com/images/icon/ic_favorite_white.png)  项目：[Dagger](https://github.com/square/dagger)，分析者：[扔物线](https://github.com/rengwuxian)，校对者：[Trinea](https://github.com/Trinea)
+项目：[Dagger](https://github.com/square/dagger)，分析者：[扔物线](https://github.com/rengwuxian)，校对者：[Trinea](https://github.com/Trinea)
 
 > 本文为 [Android 开源项目源码解析](http://a.codekk.com/) 中 Dagger 部分
 > 项目地址：[Dagger](https://github.com/square/dagger)，分析的版本：[2f9579c](https://github.com/square/dagger/commit/2f9579c48e887ffa316f329c12c2fa2abbec27b1)，Demo 地址：[Dagger Demo](https://github.com/android-cn/android-open-project-demo/tree/master/dagger-demo)
@@ -36,7 +36,7 @@ Activity 中有一个 Boss 类属性，现在你想把一个 Boss 对象注入�
 
 在 Boss 类的构造函数前添加一个 @Inject 注解，Dagger 就会在需要获取 Boss 对象时，调用这个被标记的构造函数，从而生成一个 Boss 对象。
 
-```
+```java
 public class Boss {
     ...
 
@@ -47,26 +47,24 @@ public class Boss {
 
     ...
 }
-
 ```
 
-*需要注意的是，如果构造函数含有参数，Dagger 会在调用构造对象的时候先去获取这些参数(不然谁来传参？)，所以你要保证它的参数也提供可被 Dagger 调用到的生成函数。Dagger 可调用的对象生成方式有两种：一种是用 @Inject 修饰的构造函数，上面就是这种方式。另外一种是用 @Provides 修饰的函数，下面会讲到。*
+需要注意的是，如果构造函数含有参数，Dagger 会在调用构造对象的时候先去获取这些参数(不然谁来传参？)，所以你要保证它的参数也提供可被 Dagger 调用到的生成函数。Dagger 可调用的对象生成方式有两种：一种是用 @Inject 修饰的构造函数，上面就是这种方式。另外一种是用 @Provides 修饰的函数，下面会讲到。
 
 ##### (2). Boss 对象怎样被设置到 Activity 中
 
 通过 @Inject 注解了构造函数之后，在 Activity 中的 Boss 属性声明之前也添加 @Inject 注解。像这种在属性前添加的 @Inject 注解的目的是告诉 Dagger 哪些属性需要被注入。
 
-```
+```java
 public class MainActivity extends Activity {
     @Inject Boss boss;
     ...
 }
-
 ```
 
 最后，我们在合适的位置(例如 onCreate() 函数中)调用 ObjectGraph.inject() 函数，Dagger 就会自动调用上面 (1) 中的生成方法生成依赖的实例，并注入到当前对象(MainActivity)。
 
-```
+```java
 public class MainActivity extends Activity {
     @Inject Boss boss;
 
@@ -76,17 +74,15 @@ public class MainActivity extends Activity {
     }
     ...
 }
-
 ```
 
 具体怎么注入即设置的过程后面会详细介绍，这里简单透露下，APT 会在 MainActivity 所在 package 下生成一个辅助类 MainActivity$$InjectAdapter，这个类有个 injectMembers() 函数，代码类似：
 
-```
+```java
 public void injectMembers(MainActivity paramMainActivity) {
     paramMainActivity.boss = ((Boss)boss.get());
     ……
 }
-
 ```
 
 上面我们已经通过 ObjectGraph.inject() 函数传入了 paramMainActivity，并且 boss 属性是 package 权限，所以 Dagger 只需要调用这个辅助类的 injectMembers() 函数即可完成依赖注入，这里的 boss.get() 会调用 Boss 的生成函数。
@@ -96,11 +92,10 @@ public void injectMembers(MainActivity paramMainActivity) {
 
 上面 onCreate() 函数中出现了两个类：ObjectGraph 和 AppModule。其中 ObjectGraph 是由 Dagger 提供的类，可以简单理解为一个依赖管理类，它的 create() 函数的参数是一个数组，为所有需要用到的 Module(例如本例中的 AppModule)。AppModule 是一个自定义类，在 Dagger 中称为`Module`，通过 @Module 注解进行标记，代码如下：
 
-```
+```java
 @Module(injects = MainActivity.class)
 public class AppModule {
 }
-
 ```
 
 可以看到，AppModule 是一个空类，除了一行注解外没有任何代码。
@@ -119,18 +114,17 @@ public class AppModule {
 
 对于以上三种情况，可以使用 @Provides 注解来标记自定义的生成函数，从而被 Dagger 调用。形式如下：
 
-```
+```java
 @Provides
 Coder provideCoder(Boss boss) {
     return new Coder(boss);
 }
-
 ```
 
-*和构造函数一样，@Provides 注解修饰的函数如果含有参数，它的所有参数也需要提供可被 Dagger 调用到的生成函数。*
+和构造函数一样，@Provides 注解修饰的函数如果含有参数，它的所有参数也需要提供可被 Dagger 调用到的生成函数。
 需要注意的是，所有 @Provides 注解的生成函数都需要在`Module`中定义实现，这就是上面提到的 Module 的作用之一——让 ObjectGraph 知道怎么生成某些依赖。
 
-```
+```java
 @Module
 public class AppModule {
     @Provides
@@ -138,7 +132,6 @@ public class AppModule {
         return new Coder(boss);
     }
 }
-
 ```
 
 ##### (2). @Inject 和 @Provide 两种依赖生成方式区别
@@ -151,7 +144,7 @@ c. @Inject 修饰的函数只能是构造函数，@Provides 修饰的函数必�
 
 Dagger 支持单例(事实上单例也是依赖注入最常用的场景)，使用方式也很简单：
 
-```
+```java
 // @Inject 注解构造函数的单例模式
 @Singleton
 public class Boss {
@@ -164,17 +157,15 @@ public class Boss {
 
     ...
 }
-
 ```
 
-```
+```java
 // @Provides 注解函数的单例模式
 @Provides
 @Singleton
 Coder provideCoder(Boss boss) {
     return new Coder(boss);
 }
-
 ```
 
 在相应函数添加 @Singleton 注解，依赖的对象就只会被初始化一次，之后的每次都会被直接注入相同的对象。
