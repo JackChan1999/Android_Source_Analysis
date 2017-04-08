@@ -320,7 +320,8 @@ NestedScrollView的滑动功能，应该大致如此了。有些细节的知识�
 还记得前面我们跟到了mChildHelper.startNestedScroll函数么，那个函数的主要工作就是要找到一个支持nested功能的mNestedScrollingParent。哦，其实应该是ancestorView。明眼人掐指一算，这个支持nested功能的view不就是我们熟悉的CoordinatorLayout么？此处，我们先建立一个大前提，layout文件中我们让NestedScrollView支持视差，使用CoordinatorLayout和AppbarLayout，xml如下
 
 ```xml
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_content"
     android:layout_width="match_parent"

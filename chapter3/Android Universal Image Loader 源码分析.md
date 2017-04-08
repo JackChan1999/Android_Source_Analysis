@@ -64,7 +64,7 @@ imageLoader.displayImage(imageUri, imageView);
 
 下载图片，解析为 Bitmap 传递给回调接口。
 
-```
+```java
 imageLoader.loadImage(imageUri, new SimpleImageLoadingListener() {
     @Override
     public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
@@ -87,7 +87,7 @@ imageLoader.loadImage(imageUri, new SimpleImageLoadingListener() {
 
 #### 2.1. 总体设计图
 
-![总体设计图](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/overall-design.png)
+![总体设计图](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/overall-design.png)  
 上面是 UIL 的总体设计图。整个库分为`ImageLoaderEngine`，`Cache`及`ImageDownloader`，`ImageDecoder`，`BitmapDisplayer`，`BitmapProcessor`五大模块，其中`Cache`分为`MemoryCache`和`DiskCache`两部分。
 
 简单的讲就是`ImageLoader`收到加载及显示图片的任务，并将它交给`ImageLoaderEngine`，`ImageLoaderEngine`分发任务到具体线程池去执行，任务通过`Cache`及`ImageDownloader`获取图片，中间可能经过`BitmapProcessor`和`ImageDecoder`处理，最终转换为`Bitmap`交给`BitmapDisplayer`在`ImageAware`中显示。
@@ -95,6 +95,7 @@ imageLoader.loadImage(imageUri, new SimpleImageLoadingListener() {
 #### 2.2. UIL 中的概念
 
 简单介绍一些概念，在`4. 详细设计`中会仔细介绍。
+
 **ImageLoaderEngine：**任务分发器，负责分发`LoadAndDisplayImageTask`和`ProcessAndDisplayImageTask`给具体的线程池去执行，本文中也称其为`engine`，具体参考`4.2.6 ImageLoaderEngine.java`。
 
 **ImageAware：**显示图片的对象，可以是`ImageView`等，具体参考`4.2.9 ImageAware.java`。
@@ -121,7 +122,8 @@ imageLoader.loadImage(imageUri, new SimpleImageLoadingListener() {
 
 ### 3. 流程图
 
-![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/uil-flow.png)
+![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/uil-flow.png)  
+
 上图为图片加载及显示流程图，在 uil 库中给出，这里用中文重新画出。
 
 ### 4. 详细设计
@@ -155,14 +157,16 @@ imageLoader.loadImage(imageUri, new SimpleImageLoadingListener() {
 - `loadImage(…)` 表示异步加载图片并执行回调接口。
 - `loadImageSync(…)` 表示同步加载图片。
 
-以上三类接口最终都会调用到这个函数进行图片加载。函数参数解释如下：
-**uri:** 图片的 uri。uri 支持多种来源的图片，包括 http、https、file、content、assets、drawable 及自定义，具体介绍可见`ImageDownloader`。
-**imageAware:** 一个接口，表示需要加载图片的对象，可包装 View。
-**options:** 图片显示的配置项。比如加载前、加载中、加载失败应该显示的占位图片，图片是否需要在磁盘缓存，是否需要在内存缓存等。
-**listener:** 图片加载各种时刻的回调接口，包括开始加载、加载失败、加载成功、取消加载四个时刻的回调函数。
-**progressListener:** 图片加载进度的回调接口。
+以上三类接口最终都会调用到这个函数进行图片加载。函数参数解释如下：  
 
-**函数流程图如下：**
+- **uri:** 图片的 uri。uri 支持多种来源的图片，包括 http、https、file、content、assets、drawable 及自定义，具体介绍可见`ImageDownloader`。
+- **imageAware:** 一个接口，表示需要加载图片的对象，可包装 View。
+- **options:** 图片显示的配置项。比如加载前、加载中、加载失败应该显示的占位图片，图片是否需要在磁盘缓存，是否需要在内存缓存等。
+- **listener:** 图片加载各种时刻的回调接口，包括开始加载、加载失败、加载成功、取消加载四个时刻的回调函数。
+- **progressListener:** 图片加载进度的回调接口。
+
+**函数流程图如下：**  
+
 ![ImageLoader Display Image Flow Chart](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/display-image-flow-chart.png)
 
 ##### 4.2.2 ImageLoaderConfiguration.java
@@ -501,7 +505,7 @@ PS：重命名线程是个很好的习惯，它的一大作用就是方便问题
 
 ##### 4.2.10 ViewAware.java
 
-封装 Android View 来显示图片的抽象类，实现了`ImageAware`接口，利用`Reference`来 Warp View 防止内存泄露。
+封装 Android View 来显示图片的抽象类，实现了`ImageAware`接口，利用`Reference`来 wrap View 防止内存泄露。
 
 **主要函数：**
 
@@ -522,7 +526,7 @@ PS：重命名线程是个很好的习惯，它的一大作用就是方便问题
 
 ##### 4.2.11 ImageViewAware.java
 
-封装 Android ImageView 来显示图片的`ImageAware`，继承了`ViewAware`，利用`Reference`来 Warp View 防止内存泄露。
+封装 Android ImageView 来显示图片的`ImageAware`，继承了`ViewAware`，利用`Reference`来 wrap View 防止内存泄露。
 如果`getWidth()`函数小于等于 0，会利用反射获取`mMaxWidth`的值作为宽。
 如果`getHeight()`函数小于等于 0，会利用反射获取`mMaxHeight`的值作为高。
 
@@ -1259,14 +1263,24 @@ Log 工具类。
 #### 聊聊 LRU
 
 UIL 的内存缓存默认使用了 LRU 算法。 LRU: Least Recently Used 近期最少使用算法, 选用了基于链表结构的 LinkedHashMap 作为存储结构。
-假设情景：内存缓存设置的阈值只够存储两个 bitmap 对象，当 put 第三个 bitmap 对象时，将近期最少使用的 bitmap 对象移除。
-图 1: 初始化 LinkedHashMap, 并按使用顺序来排序, accessOrder = true;
-图 2: 向缓存池中放入 bitmap1 和 bitmap2 两个对象。
-图 3: 继续放入第三个 bitmap3，根据假设情景，将会超过设定缓存池阈值。
-图 4: 释放对 bitmap1 对象的引用。
-图 5: bitmap1 对象被 GC 回收。
+假设情景：内存缓存设置的阈值只够存储两个 bitmap 对象，当 put 第三个 bitmap 对象时，将近期最少使用的 bitmap 对象移除。  
+
+图 1: 初始化 LinkedHashMap, 并按使用访问顺序来排序, accessOrder = true;  
+
 ![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/lru_header.png)
+
+图 2: 向缓存池中放入 bitmap1 和 bitmap2 两个对象。  
+
 ![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/lru_put.png)
+
+图 3: 继续放入第三个 bitmap3，根据假设情景，将会超过设定缓存池阈值。    
+
 ![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/lru_put_exceed_maxsize2.png)
+
+图 4: 释放对 bitmap1 对象的引用。   
+
 ![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/lru_put_trim.png)
+
+图 5: bitmap1 对象被 GC 回收。  
+
 ![img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/image-cache/universal-image-loader/image/lru_trim_result.png)

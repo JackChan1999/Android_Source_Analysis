@@ -171,8 +171,7 @@ public static @Nullable Looper myLooper() {
 }
 ```
 
-现在的 sMainLooper 就有值了，也就是说，只要我们的 App 启动，sMainLooper 中就已经设置了一个 Looper 对象。以后调用
-sMainLooper 的 get 方法将返回在程序启动时设置的 Looper，不会为空的。  
+现在的 sMainLooper 就有值了，也就是说，只要我们的 App 启动，sMainLooper 中就已经设置了一个 Looper 对象。以后调用sMainLooper 的 get 方法将返回在程序启动时设置的 Looper，不会为空的。  
 
 下面在看 main 方法中的 调用的 Looper.loop() 方法。 已经把一些无关代码删了，否则太长了，
 
@@ -350,7 +349,6 @@ public void dispatchMessage(Message msg) {
 我们看到，我们没有给 msg 设置 callback 也没有给 handler 的 mCallback 设置过值，所以此时，会执行 handleMessage() 方法；
 
 ```java
-
 public void handleMessage(Message msg) {
 
 }
@@ -413,9 +411,9 @@ private static void handleCallback(Message message) {
 现在就会想了，在处理消息时，什么时候才能执行到第一种情况呢，也就是通过 Message 的 callback 对象处理。
 
 其实简单，查看源码发现
-
+```java
 /*package*/ Runnable callback;
-
+```
 callback 是一个 Runnable 接口，那我们这怎么才能设置 Message 的 callback 的参数呢？最后观察发现，Handler 发送消息时，除了使用 sendMessage 方法，还可以使用一个叫 post 的方法，而他的形参正好就是 Runnable,我们赶紧拔出他的源码看看。
 
 ```java

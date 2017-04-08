@@ -13,7 +13,8 @@
 ![viewdrawflow img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tech/viewdrawflow/image/view_mechanism_flow.png)
 
 **View 绘制流程函数调用链**
-![view_draw_method_chain img](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tech/viewdrawflow/image/view_draw_method_chain.png)
+![view_draw_method_chain img](../assets/view_draw_method_chain.png)  
+
 图片来自 [https://plus.google.com/+ArpitMathur/posts/cT1EuBbxEgN](https://plus.google.com/+ArpitMathur/posts/cT1EuBbxEgN)
 需要说明的是，用户主动调用 request，只会出发 measure 和 layout 过程，而不会执行 draw 过程
 

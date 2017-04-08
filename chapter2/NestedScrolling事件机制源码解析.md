@@ -1,11 +1,11 @@
 Android在发布 5.0（Lollipop）版本之后，Google为我们提供了嵌套滑动（NestedScrolling） 的特性，今天就由我带大家去看看嵌套滑动机制是怎样的原理？
 
 首先，请随意瞄一瞄以下4个类：
-[NestedScrollingChild](http://developer.android.com/reference/android/support/v4/view/NestedScrollingChild.html)
-[NestedScrollingChildHelper](http://developer.android.com/reference/android/support/v4/view/NestedScrollingChildHelper.html)
 
-[NestedScrollingParent](http://developer.android.com/reference/android/support/v4/view/NestedScrollingParent.html)
-[NestedScrollingParentHelper](http://developer.android.com/reference/android/support/v4/view/NestedScrollingParentHelper.html)
+- [NestedScrollingChild](http://developer.android.com/reference/android/support/v4/view/NestedScrollingChild.html)
+- [NestedScrollingChildHelper](http://developer.android.com/reference/android/support/v4/view/NestedScrollingChildHelper.html)
+- [NestedScrollingParent](http://developer.android.com/reference/android/support/v4/view/NestedScrollingParent.html)
+- [NestedScrollingParentHelper](http://developer.android.com/reference/android/support/v4/view/NestedScrollingParentHelper.html)
 
 有个大概印象就好，如果你一看就懂，那就不要浪费时间继续看下去了，啊哈哈哈！
 
@@ -14,7 +14,7 @@ Android在发布 5.0（Lollipop）版本之后，Google为我们提供了嵌套�
 ```java
 public interface NestedScrollingChild {  
     /**
-     * 设置嵌套滑动是否能用
+     * 设置嵌套滑动是否可用
      *
      *  @param enabled true to enable nested scrolling, false to disable
      */  
@@ -97,7 +97,7 @@ public interface NestedScrollingChild {
 
 ```java
 public class RecyclerView extends ViewGroup implements ScrollingView, NestedScrollingChild {
-..................................................................................
+	...
 }
 ```
 
@@ -199,9 +199,11 @@ public class RecyclerView extends ViewGroup implements ScrollingView, NestedScro
 从这里至少可以得出 子view在调用某个方法都会回调嵌套父view相应的方法，比如子view开始了`startNestedScroll`，如果嵌套父view存在，就会回调父view的`onStartNestedScroll`、`onNestedScrollAccepted`方法。
 
 有兴趣的朋友在去看看
-*NestedScrollingChildHelper#dispatchNestedPreScroll*
-*NestedScrollingChildHelper#dispatchNestedScroll*
-*NestedScrollingChildHelper#stopNestedScroll*
+
+- NestedScrollingChildHelper#dispatchNestedPreScroll
+- NestedScrollingChildHelper#dispatchNestedScroll
+- NestedScrollingChildHelper#stopNestedScroll
+
 的实现。
 
 接下来，在来看看嵌套滑动父view *NestedScrollingParent*，定义如下

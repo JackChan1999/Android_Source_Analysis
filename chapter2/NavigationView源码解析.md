@@ -11,7 +11,7 @@
 
 其效果一般为：
 
-<img src="imgs-navigationview/nv-sample.png" width="360px"/>
+<img src="../assets/nv-sample.png" width="360px"/>
 
 用法也非常简单，只需要在布局文件中声明即可：
 

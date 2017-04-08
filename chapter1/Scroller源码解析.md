@@ -26,7 +26,7 @@
     }
 
 ```
-`scrollTo()`是指将前视图内容横向偏移`x`距离，纵向偏移`y`距离。注意这里是`View`的内容的偏移，而不是`View`本身。而`scrollBy()`方法如下：
+`scrollTo()`是指将当前视图内容横向偏移`x`距离，纵向偏移`y`距离。注意这里是`View`的内容的偏移，而不是`View`本身。而`scrollBy()`方法如下：
 
 ```java
     public void scrollBy(int x, int y) {

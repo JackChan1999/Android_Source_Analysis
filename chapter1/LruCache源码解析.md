@@ -93,7 +93,7 @@ public LruCache(int maxSize) {
 /**
  * 根据 key 查询缓存，如果存在于缓存或者被 create 方法创建了。
  * 如果值返回了，那么它将被移动到双向循环链表的的尾部。
- * 如果如果没有缓存的值，则返回 null。
+ * 如果没有缓存的值，则返回 null。
  */
 public final V get(K key) {
 
@@ -373,5 +373,6 @@ LruCache重要的几点：
 
 [LruCacheActivity](https://github.com/CaMnter/AndroidLife/blob/master/app/src/main/java/com/camnter/newlife/views/activity/lrucache/LruCacheActivity.java)    
 
-
 [LruCache 注释源码](https://github.com/CaMnter/AndroidLife/blob/master/app/src/main/java/com/camnter/newlife/utils/cache/LruCache.java)   
+
+[原文链接](https://github.com/LittleFriendsGroup/AndroidSdkSourceAnalysis/blob/master/article/LruCache%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90.md)

@@ -50,8 +50,8 @@ public class MainActivity extends ActionBarActivity {
 
 其内容分别如下：
 
-```xml
 at Test.xml
+```xml
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
     <boolean name="saveed" value="true" />
@@ -60,8 +60,9 @@ at Test.xml
         <string>bbbbbbbb</string>
     </set>
 </map>
-
+```
 at MainActivity.xml
+```xml
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
     <string name="name">haha</string>

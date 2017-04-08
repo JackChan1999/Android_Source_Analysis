@@ -70,7 +70,7 @@ tabLayout.setupWithViewPager(viewPager);
 
 ## 3. 详细设计
 ### 3.1 类关系图
-![TabLayout](https://github.com/Aspsine/AndroidSdkSourceAnalysis/blob/master/img/class-uml.png)
+![TabLayout](../assets/tablayout.png)
 
 ### 3.2 分析
 
@@ -188,7 +188,7 @@ public TabLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 至此，我们就明白了`TabLayout`中子View的一致性是如何保证的。也明白了`TabView`其实才是亲生的，`TabItem`其实是后娘养的! 这些代码都很简单，不过我们可以从中学习到很多有用的思想。
 
 至此，一个清晰的`View`层级图应该就出现在了各位同学的眼前。
-![TabLayout Hierarchy](https://github.com/Aspsine/AndroidSdkSourceAnalysis/blob/master/img/hierarchy.png)
+![TabLayout Hierarchy](../assets/hierarchy.png)
 
 
 #### 3.2.2 与ViewPager搭配使用

@@ -3,9 +3,16 @@
 ### 1. Bundle的概念理解 ###
 Bundle对于Android开发者来说肯定非常眼熟，它经常出现在以下场合：
 
-- Activity状态数据的保存与恢复涉及到的两个回调：`void onSaveInstanceState (Bundle outState)`、`void onCreate (Bundle savedInstanceState)`
+- Activity状态数据的保存与恢复涉及到的两个回调：
+
+  `void onSaveInstanceState (Bundle outState)`
+
+  `void onCreate (Bundle savedInstanceState)`
+
 - Fragment的setArguments方法：`void setArguments (Bundle args)`
+
 - 消息机制中的Message的setData方法：`void setData (Bundle data)`
+
 - 其他场景不再列举
 
 Bundle从字面上解释为“一捆、一批、一包”，结合上述几个应用场合，可以知道Bundle是用来传递数据的，我们暂将Bundle理解为Android中用来传递数据的一个容器。官方文档对Bundle的说明如下：
