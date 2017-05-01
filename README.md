@@ -106,13 +106,14 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
   * [Android设计模式源码解析之策略模式](design_patterns/strategy/README.md)
   * [Android设计模式源码解析之模板方法模式](design_patterns/template-method/readme.md)
 
-  ## 关注我
+## 关注我
 
-  - Email：<815712739@qq.com>
-  - CSDN博客：[Allen Iverson](http://blog.csdn.net/axi295309066)
-  - 新浪微博：[AndroidDeveloper](http://weibo.com/u/1848214604?topnav=1&wvr=6&topsug=1&is_all=1)
-  - GitHub：[JackChen1999](https://github.com/JackChen1999)
-  - GitBook：[alleniverson](https://www.gitbook.com/@alleniverson)
+- Email：<815712739@qq.com>
+- CSDN博客：[Allen Iverson](http://blog.csdn.net/axi295309066)
+- 新浪微博：[AndroidDeveloper](http://weibo.com/u/1848214604?topnav=1&wvr=6&topsug=1&is_all=1)
+- GitHub：[JackChan1999](https://github.com/JackChan1999)
+- GitBook：[alleniverson](https://www.gitbook.com/@alleniverson)
+- 个人博客：[JackChan](https://jackchan1999.github.io/)
 
 |                   微信打赏                   |                  支付宝打赏                   |
 | :--------------------------------------: | :--------------------------------------: |
