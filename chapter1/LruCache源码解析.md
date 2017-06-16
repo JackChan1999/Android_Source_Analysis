@@ -54,13 +54,13 @@ LruCache 就是 **利用 LinkedHashMap 的一个特性（ accessOrder＝true 基
 
 - 2.然后在每次 `LruCache.get(K key)` 方法里都会调用 `LinkedHashMap.get(Object key)`。
 
-- 3.如上述设置了 `accessOrder=true` 后，每次 `LinkedHashMap.get(Object key)` 都会进行 `LinkedHashMap.makeTail(LinkedEntry<K, V> e)`。
+- 3.如上述设置了 `accessOrder=true` 后，每次 `LinkedHashMap.get(Object key)` 都会进行 `LinkedHashMap.makeTail(LinkedEntry&lt;K, V> e)`。
 
 - 4.`LinkedHashMap` 是双向循环链表，然后每次 `LruCache.get` -> `LinkedHashMap.get` 的数据就被放到最末尾了。
 
 - 5.在 `put` 和 `trimToSize` 的方法执行下，如果发生数据量移除，会优先移除掉最前面的数据（因为最新访问的数据在尾部）。
 
-**具体解析在：** *4.2*、*4.3*、*4.4*、*4.5* 。
+**具体解析在：** 4.2、4.3、4.4、4.5
 
 
 ### 4.2 LruCache 的唯一构造方法
@@ -207,11 +207,11 @@ public final V get(K key) {
     return null;
 }
 ```
-其实仔细看 `if (accessOrder)` 的逻辑即可，如果  `accessOrder=true` 那么每次 `get` 都会执行 N 次  `makeTail(LinkedEntry<K, V> e)` 。
+其实仔细看 `if (accessOrder)` 的逻辑即可，如果  `accessOrder=true` 那么每次 `get` 都会执行 N 次  `makeTail(LinkedEntry&lt;K, V> e)` 。
 
 接下来看看：
 
-### 4.5 LinkedHashMap.makeTail(LinkedEntry<K, V> e)
+### 4.5 LinkedHashMap.makeTail(LinkedEntry&lt;K, V> e)
 ```java
 /**
  * Relinks the given entry to the tail of the list. Under access ordering,
@@ -233,21 +233,21 @@ private void makeTail(LinkedEntry<K, V> e) {
 }
 ```
 
-*// Unlink e*  
+// Unlink e
+
 <img src="http://ww2.sinaimg.cn/large/006lPEc9jw1f36m59c4tgj31kw2c7tgn.jpg" width="500x"/>  
 
-*// Relink e as tail*  
+// Relink e as tail
+
 <img src="http://ww3.sinaimg.cn/large/006lPEc9jw1f36m68rkisj31kw1eswnd.jpg" width="500x"/>  
+
+![](images/lrucache.png)
 
 LinkedHashMap 是双向循环链表，然后此次 **LruCache.get -> LinkedHashMap.get** 的数据就被放到最末尾了。
 
 **以上就是 LruCache 核心工作原理**。
 
----
-
 接下来介绍 **LruCache 的容量溢出策略**。
-
-
 
 ### 4.6 LruCache.put(K key, V value)
 ```java
@@ -310,8 +310,6 @@ public void trimToSize(int maxSize) {
 ```
 简单描述：会判断之前 `size` 是否大于 `maxSize` 。是的话，直接跳出后什么也不做。不是的话，证明已经溢出容量了。由 `makeTail` 图已知，最近经常访问的数据在最末尾。拿到一个存放 key 的 Set，然后一直一直从头开始删除，删一个判断是否溢出，直到没有溢出。
 
----
-
 最后看看：
 
 ### 4.8 覆写 entryRemoved 的作用
@@ -322,7 +320,11 @@ entryRemoved被LruCache调用的场景：
 - **3.（remove）** remove的时候，存在对应 key，并且被成功删除后被调用。**evicted=false，key=此次 put的 key，oldValue=此次删除的 value，newValue=null（此次没有冲突，只是 remove）**。
 - **4.（get后半段，查询丢失后处理情景，不过建议忽略）** get 的时候，正常的话不实现自定义 `create` 的话，代码上看 get 方法只会走一半，如果你实现了自定义的 `create(K key)` 方法，并且在 你 create 后的值放入 LruCache 中发生 key 冲突时被调用，**evicted=false，key=此次 get 的 key，oldValue=被你自定义 create(key)后的 value，newValue=原本存在 map 里的 key-value**。
 
-解释一下第四点吧：**<1>.**第四点是这样的，先 get(key)，然后没拿到，丢失。**<2>.**如果你提供了 自定义的 `create(key)` 方法，那么 LruCache 会根据你的逻辑自造一个 value，但是当放入的时候发现冲突了，但是已经放入了。**<3>.**此时，会将那个冲突的值再让回去覆盖，此时调用上述4.的 entryRemoved。
+解释一下第四点吧：
+
+- 第四点是这样的，先 get(key)，然后没拿到，丢失。
+- 如果你提供了 自定义的 `create(key)` 方法，那么 LruCache 会根据你的逻辑自造一个 value，但是当放入的时候发现冲突了，但是已经放入了。
+- 此时，会将那个冲突的值再让回去覆盖，此时调用上述4.的 entryRemoved。
 
 因为 HashMap 在数据量大情况下，拿数据可能造成丢失，导致前半段查不到，你自定义的 `create(key)` 放入的时候发现又查到了**（有冲突）**。然后又急忙把原来的值放回去，此时你就白白create一趟，无所作为，还要走一遍entryRemoved。
 

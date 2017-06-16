@@ -42,6 +42,7 @@ android sdk 源码解析——旨在帮助Android开发者更好的学习Android
 
 * [Android源码分析 第1期](chapter1/README.md)
   * [AsyncTask源码分析](chapter1/AsyncTask源码分析.md)
+  * [你真的了解AsyncTask](chapter1/你真的了解AsyncTask.md)
   * [Binder源码分析](chapter1/Binder源码分析.md)
   * [BottomSheets源码解析](chapter1/BottomSheets源码解析.md)
   * [CompoundButton源码分析](chapter1/CompoundButton源码分析.md)

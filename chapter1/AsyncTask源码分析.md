@@ -245,7 +245,7 @@ public class FutureTask<V> implements RunnableFuture<V> // 实现了RunnableFutu
 ```
 作为Runnable被线程执行，同时将Callable作为构造函数的参数传入，这样组合的好处是，假设有一个很耗时的返回值需要计算，并且这个返回值不是立刻需要的话，就可以使用这个组合，用另一个线程去计算返回值，而当前线程在使用这个返回值之前可以做其它的操作，等到需要这个返回值时，再通过Future得到。FutureTask的run方法要开始回调WorkerRunable的call方法了，call里面调用doInBackground(mParams)，终于回到我们后台任务了，调用我们AsyncTask子类的`doInBackground()`，由此可以看出`doInBackground()`是在子线程中执行的，如下图所示
 
-![](https://github.com/white37/AndroidSdkSourceAnalysis/blob/master/images/FutureTask(run).png)
+![](images/FutureTask.png)
 
 ### 4.2 核心方法
 1、execute()方法
@@ -425,14 +425,14 @@ private void finish(Result result) {
 ```
 如果你还不够清晰，请看下面的这个流程图
 
-![](https://github.com/white37/AndroidSdkSourceAnalysis/blob/master/images/AsyncTask%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
+![](images/AsyncTask流程图.png)
 
 ## 5. AsyncTask需要注意的坑
 
 * AsyncTask的对象必须在主线程中实例化，execute方法也要在主线程调用(查看3.1节-AsyncTask构造函数)
 * 同一个AsyncTask任务只能被执行一次，即只能调用一次execute方法，多次调用时将会抛异常（查看3.2里面的第二小节）
 * cancel()方法无法直接中断子线程，只是更改了中断的标志位。控制异步任务执行结束后不会回调onPostExecute()。正确的取消异步任务要cancel()方法+doInbacground()做判断跳出循环
-* AsyncTask在Activit通常作为匿名的内部类来使用，如果 AsyncTask 中的异步任务在 Activity 退出时还没执行完或者阻塞了，那么这个保持的外部的 Activity 实例得不到释放（内部类保持隐式外部类的实例的引用），最后导致会引起OOM，解决办法是：在 AsyncTask 使用弱引用外部实例，或者保证在 Activity 退出时，所有的 AsyncTask 已执行完成或被取消
+* AsyncTask在Activity通常作为匿名的内部类来使用，如果 AsyncTask 中的异步任务在 Activity 退出时还没执行完或者阻塞了，那么这个保持的外部的 Activity 实例得不到释放（内部类保持隐式外部类的实例的引用），最后导致会引起OOM，解决办法是：在 AsyncTask 使用弱引用外部实例，或者保证在 Activity 退出时，所有的 AsyncTask 已执行完成或被取消
 * 会产生阻塞问题，尤其是单任务顺序执行的情况下，一个任务执行时间过长会阻塞其他任务的执行
 * 不建议使用AsyncTask进行网络操作
 

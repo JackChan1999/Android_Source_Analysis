@@ -321,7 +321,7 @@ public int bindService(IApplicationThread caller, IBinder token,
 
 *关于更多的 `bindService()` 远程服务创建及 `ServiceConnection` 回调， 请参考 [Android应用程序绑定服务（bindService）的过程源代码分析](http://blog.csdn.net/luoshengyang/article/details/6745181)*
 
-*利用进程间通信，我们可以实现简单的应用插件功能。关于 AIDL 在实际项目中的应用，可以参考 [CallerInfo Plugin](https://github.com/xdtianyu/CallerInfo/tree/master/plugin/src/main) 的实现 *
+利用进程间通信，我们可以实现简单的应用插件功能。关于 AIDL 在实际项目中的应用，可以参考 [CallerInfo Plugin](https://github.com/xdtianyu/CallerInfo/tree/master/plugin/src/main) 的实现 
 
 从上面分析可以看出， AIDL 的本质是对 Binder 的又一次抽象和封装，实际的进程间通信仍是由 Binder 完成的。
 
