@@ -30,7 +30,7 @@ mListView.setAdapter(mAdapter = new QuickAdapter<Bean>(MainActivity.this, R.layo
 
 #### 1.3 优点
 
-(1) 提供 QucikAdapter，省去类似 getCount() 等抽象函数的书写，只需关注 Model 到 View 的显示。
+(1) 提供 QucikAdapter，省去类似 getCount() 等抽象函数的书写，只需关注 Model 到 View 的显示。		
 (2) BaseAdapterHelper 中封装了大量用于为 View 操作的辅助方法，例如从网络加载图片：
 `helper.setImageUrl(R.id.iv_photo, item.getPhotoUrl());`
 
@@ -39,7 +39,7 @@ mListView.setAdapter(mAdapter = new QuickAdapter<Bean>(MainActivity.this, R.layo
 (1) 与 Picasso 耦合，想替换为其他图片缓存需要修改源码。
 可通过接口方式，供三方根据自己的图片缓存库实现图片获取，或者直接去掉`helper.setImageUrl(…)`函数。
 
-(2) 与内部添加的进度条偶尔，导致不支持多种类型布局
+(2) 与内部添加的进度条耦合，导致不支持多种类型布局
 在本文最后给出不改动进度条的解决方法。更好的实现方式应该是通过接口方式暴露，供三方自己设置。
 
 (3) 目前的方案也不支持`HeaderViewListAdapter`。
@@ -62,12 +62,12 @@ mListView.setAdapter(mAdapter = new QuickAdapter<Bean>(MainActivity.this, R.layo
 #### 3.1 类关系图
 
 ![类关系图](https://raw.githubusercontent.com/android-cn/android-open-project-analysis/master/tool-lib/other/base-adapter-helper/image/base-adapter-helper-ClassDiagram.jpg)
-这是 base-adapter-helper 库的主要类关系图。
-(1) 在 BaseQucikAdapter 中实现了 BaseAdapter 中通用的抽象方法；
-(2) BaseQuickAdapter 中两个泛型，其中 T 表示数据实体类(Bean)类型，H 表示 BaseAdapterHelper 或其子类；
-(3) QucikAdapter 继承自 BaseQuickAdapter，并且传入 BaseAdapterHelper 作为 H 泛型；
-(4) EnhancedQuickAdapter 主要为`convert(…)`方法添加了一个 itemChanged 参数，表示 item 对应数据是否发生变化；
-(5) BaseAdapterHelper 为用于获取 View 并进行内容、事件设置等相关操作的辅助类。其中多数用于设置的方法都采用链式编程，方便书写；
+这是 base-adapter-helper 库的主要类关系图。		
+(1) 在 BaseQucikAdapter 中实现了 BaseAdapter 中通用的抽象方法；		
+(2) BaseQuickAdapter 中两个泛型，其中 T 表示数据实体类(Bean)类型，H 表示 BaseAdapterHelper 或其子类；		
+(3) QucikAdapter 继承自 BaseQuickAdapter，并且传入 BaseAdapterHelper 作为 H 泛型；		
+(4) EnhancedQuickAdapter 主要为`convert(…)`方法添加了一个 itemChanged 参数，表示 item 对应数据是否发生变化；		
+(5) BaseAdapterHelper 为用于获取 View 并进行内容、事件设置等相关操作的辅助类。其中多数用于设置的方法都采用链式编程，方便书写；		
 (6) 可以根据自己需要继承 BaseAdapterHelper 来扩展，做为 BaseQuickAdapter 子类的 H 泛型。
 
 ### 3.2 核心类源码分析
@@ -175,8 +175,8 @@ protected abstract void convert(BaseAdapterHelper helper, T item, boolean itemCh
 
 #### 3.2.4 BaseAdapterHelper.java
 
-可用于获取 View 并进行内容设置等相关操作的辅助类，该类的功能有：
-(1) 充当了 ViewHolder 角色，KV 形式保存 convertView 中子 View 的 id 及其引用，方便查找。和 convertView 通过 tag 关联；
+可用于获取 View 并进行内容设置等相关操作的辅助类，该类的功能有：		
+(1) 充当了 ViewHolder 角色，KV 形式保存 convertView 中子 View 的 id 及其引用，方便查找。和 convertView 通过 tag 关联；		
 (2) 提供了一堆辅助方法，用于为子 View 设置内容、样式、事件等。
 
 ##### (1) 构造相关方法
